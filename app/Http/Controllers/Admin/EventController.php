@@ -50,7 +50,7 @@ class EventController extends Controller
         $request->validate([
             'nama_event' => 'required|string|max:255',
             'tanggal_mulai' => 'required|date',
-            'tanggal_selesai' => 'required|date|after_or_equal:tanggal_mulai',
+            'tanggal_selesai' => 'required|date|after_or_equal:tanggal_mulai'
         ]);
 
         $event->update($request->except('is_active'));

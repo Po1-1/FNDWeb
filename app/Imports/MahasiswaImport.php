@@ -77,7 +77,7 @@ class MahasiswaImport implements ToModel, WithHeadingRow, WithValidation
     public function rules(): array
     {
         return [
-            'nim' => 'required|string|unique:mahasiswas,nim',
+            'nim' => 'required|unique:mahasiswas,nim',
             'nama' => 'required|string|max:255',
             'prodi' => 'required|string', // Kolom 'prodi' tetap wajib
             
