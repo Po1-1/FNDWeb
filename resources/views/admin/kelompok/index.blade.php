@@ -5,37 +5,53 @@
             + Buat Kelompok Baru
         </a>
     </div>
-    <div classKA="card shadow-sm">
+
+    <div class="card shadow-sm">
         <div class="card-body">
-            <table class="table table-hover">
-                <thead class="table-dark">
-                    <tr>
-                        <th>Nama Kelompok</th>
-                        <th>Vendor Saat Ini</th>
-                        <th>Jumlah Anggota</th>
-                        <th>Aksi</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach ($kelompoks as $kelompok)
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-dark">
                         <tr>
-                            <td>{{ $kelompok->nama }}</td>
-                            <td>
-                                @if ($kelompok->vendor)
-                                    <span class="badge bg-info">{{ $kelompok->vendor->nama_vendor }}</span>
-                                @else
-                                    <span class="badge bg-secondary">Belum Diatur</span>
-                                @endif
-                            </td>
-                            <td>{{ $kelompok->mahasiswas_count }}</td>
-                            <td>
-                                <a href="{{ route('admin.kelompok.edit', $kelompok) }}"
-                                    class="btn btn-sm btn-warning">Atur Vendor</a>
-                            </td>
+                            <th>Nama Kelompok</th>
+                            <th class="text-center">Jumlah Anggota</th>
+                            <th class="text-end">Aksi</th>
                         </tr>
-                    @endforeach
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        @forelse ($kelompoks as $kelompok)
+                            <tr>
+                                <td>{{ $kelompok->nama }}</td>
+                                
+                                <td class="text-center">
+                                    <span class="badge bg-secondary">{{ $kelompok->mahasiswas_count }} Mahasiswa</span>
+                                </td>
+                                
+                                <td class="text-end">
+                                    <a href="{{ route('admin.kelompok.edit', $kelompok) }}" class="btn btn-sm btn-warning">
+                                        Atur Jadwal & Anggota
+                                    </a>
+                                    
+                                    <form action="{{ route('admin.kelompok.destroy', $kelompok) }}" method="POST" class="d-inline" onsubmit="return confirm('Yakin hapus kelompok ini?');">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="btn btn-sm btn-danger ms-1">Hapus</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="3" class="text-center py-3 text-muted">
+                                    Belum ada data kelompok. Silakan buat baru atau import data mahasiswa.
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="mt-4">
+                {{ $kelompoks->links() }}
+            </div>
         </div>
     </div>
 </x-app-layout>

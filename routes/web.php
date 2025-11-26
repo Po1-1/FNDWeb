@@ -22,7 +22,6 @@ use App\Http\Controllers\Kasir\KasirDashboardController;
 use App\Http\Controllers\Kasir\DistribusiController;
 use App\Http\Controllers\Mentor\MentorDashboardController;
 use App\Http\Controllers\Admin\KelompokController;
-use App\Http\Controllers\Kasir\LaporanHarianController;
 
 /*
 |--------------------------------------------------------------------------
@@ -74,6 +73,7 @@ Route::middleware(['auth', EnsureUserHasRole::class . ':admin'])
         Route::get('/mahasiswa/import', [MahasiswaController::class, 'showImportForm'])->name('mahasiswa.import.form');
 
         // Rute CRUD (Resource)
+        Route::delete('/mahasiswa/destroy-all', [App\Http\Controllers\Admin\MahasiswaController::class, 'destroyAll'])->name('mahasiswa.destroyAll');
         Route::resource('mahasiswa', MahasiswaController::class);
         Route::resource('vendors', VendorController::class);
         Route::resource('makanan', MakananController::class);
@@ -103,9 +103,20 @@ Route::middleware(['auth', EnsureUserHasRole::class . ':kasir'])
         Route::get('/dashboard', [KasirDashboardController::class, 'index'])->name('dashboard');
         
         // Rute untuk mencatat distribusi
-        Route::post('/distribusi/catat-makanan', [DistribusiController::class, 'catatMakanan'])->name('distribusi.makanan.store');
+        // Rute Distribusi Lama (Mungkin masih dipakai untuk logistik)
         Route::post('/distribusi/catat-logistik', [DistribusiController::class, 'catatLogistik'])->name('distribusi.logistik.store');
-        });
+
+        // === TAMBAHKAN 2 RUTE INI ===
+        
+        // 1. Untuk menampilkan halaman checklist (Langkah 2)
+        Route::get('/distribusi/checklist', [DistribusiController::class, 'loadChecklist'])
+             ->name('distribusi.checklist'); 
+             // Hasil nama akhir: kasir.distribusi.checklist
+
+        // 2. Untuk menyimpan data checklist (Langkah 3 - INI YANG ERROR)
+        Route::post('/distribusi/store-checklist', [DistribusiController::class, 'storeChecklist'])
+             ->name('distribusi.storeChecklist');
+    });
 
 /*
 |--------------------------------------------------------------------------

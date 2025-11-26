@@ -8,6 +8,14 @@
             <a href="{{ route('admin.mahasiswa.create') }}" class="btn btn-primary">
                 + Tambah Mahasiswa
             </a>
+            <form action="{{ route('admin.mahasiswa.destroyAll') }}" method="POST" 
+                  onsubmit="return confirm('⚠️ PERINGATAN TAHAP 1 ⚠️\n\nApakah Anda yakin ingin menghapus SEMUA data mahasiswa?\n\n(Data Panitia/Mentor TIDAK akan dihapus)') && confirm('⛔ PERINGATAN TERAKHIR (TAHAP 2) ⛔\n\nTindakan ini TIDAK DAPAT DIBATALKAN!\nSemua data riwayat makan dan alergi mahasiswa juga akan dihapus permanen.\n\nApakah Anda benar-benar yakin ingin melanjutkan?');">
+                @csrf
+                @method('DELETE')
+                <button type="submit" class="btn btn-danger">
+                    <i class="bi bi-trash"></i> Reset Data (Hapus Semua)
+                </button>
+            </form>
         </div>
     </div>
 

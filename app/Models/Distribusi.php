@@ -9,23 +9,22 @@ class Distribusi extends Model
 {
     use HasFactory;
 
-
     protected $fillable = [
         'event_id',
         'user_id',
-        'kelompok_id',      // <-- DIUBAH
+        'kelompok_id',
         'tipe',
-        'jumlah_pengambilan', // <-- BARU
+        'hari_ke',      // Baru
+        'waktu_makan',  // Baru
+        'jumlah_pengambilan',
         'catatan',
     ];
 
-    // Relasi: Satu log Distribusi dicatat oleh satu User (Kasir)
     public function user()
     {
         return $this->belongsTo(User::class);
     }
 
-    // Relasi: Satu log Distribusi milik satu Event
     public function event()
     {
         return $this->belongsTo(Event::class);
@@ -34,5 +33,11 @@ class Distribusi extends Model
     public function kelompok()
     {
         return $this->belongsTo(Kelompok::class);
+    }
+
+    // Relasi ke Detail (Anak-anak yang makan)
+    public function details()
+    {
+        return $this->hasMany(DistribusiDetail::class);
     }
 }

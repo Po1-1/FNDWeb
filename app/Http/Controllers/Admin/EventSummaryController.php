@@ -8,23 +8,19 @@ use App\Models\Event;
 use App\Models\LogPenggunaanLogistik;
 use App\Models\InventarisLogistik;
 use App\Models\Kelompok;
-use App\Models\Distribusi; // Pastikan ini ada
+use App\Models\Distribusi;
+use App\Models\DistribusiDetail; // Tambahkan ini
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
 class EventSummaryController extends Controller
 {
-    /**
-     * PERBAIKAN: Tampilkan semua rekap (Aman jika tidak ada event aktif)
-     */
     public function index(Request $request)
     {
         $events = Event::all();
-        
-        // Cek dulu event aktif, baru ambil ID-nya
         $activeEvent = Event::where('is_active', true)->first();
-        $selectedEventId = $request->get('event_id', $activeEvent->id ?? null); // Aman jika $activeEvent null
+        $selectedEventId = $request->get('event_id', $activeEvent->id ?? null);
 
         $summaries = EventSummary::where('event_id', $selectedEventId)
                                  ->orderBy('tanggal_summary', 'desc')
@@ -33,143 +29,101 @@ class EventSummaryController extends Controller
         return view('admin.summary.index', compact('summaries', 'events', 'selectedEventId'));
     }
 
-    /**
-     * PERBAIKAN: Menampilkan form generate DAN mengirim log kasir
-     */
     public function showGeneratorForm(Request $request)
-{
-    $event = Event::where('is_active', true)->first();
-    if (!$event) {
-        return redirect()->route('admin.summaries.index')
-                         ->with('error', 'Tidak ada event yang aktif! Aktifkan satu event terlebih dahulu.');
+    {
+        $event = Event::where('is_active', true)->first();
+        if (!$event) {
+            return redirect()->route('admin.summaries.index')->with('error', 'Tidak ada event aktif.');
+        }
+
+        $tanggal = Carbon::parse($request->get('tanggal', now()->format('Y-m-d')));
+        $summary = EventSummary::where('event_id', $event->id)->whereDate('tanggal_summary', $tanggal)->first();
+
+        $logistikNotes = LogPenggunaanLogistik::whereDate('tanggal_penggunaan', $tanggal)->whereNotNull('catatan')->get();
+        
+        // Note: Makanan notes diambil dari header
+        $makananNotes = Distribusi::whereDate('created_at', $tanggal)->whereNotNull('catatan')->with('kelompok:id,nama')->get();
+
+        $rekapLogistik = LogPenggunaanLogistik::with('inventarisLogistik:id,nama_item,satuan')
+            ->whereDate('tanggal_penggunaan', $tanggal)
+            ->select('inventaris_logistik_id', DB::raw('SUM(jumlah_digunakan) as total_digunakan'))
+            ->groupBy('inventaris_logistik_id')
+            ->get()
+            ->map(function ($log) {
+                return [
+                    'nama_item' => $log->inventarisLogistik->nama_item ?? 'Item Dihapus',
+                    'total_digunakan' => (int) $log->total_digunakan,
+                    'satuan' => $log->inventarisLogistik->satuan ?? 'pcs'
+                ];
+            });
+
+        return view('admin.summary.generate', compact('event', 'tanggal', 'summary', 'logistikNotes', 'makananNotes', 'rekapLogistik'));
     }
 
-    $tanggal = Carbon::parse($request->get('tanggal', now()->format('Y-m-d')));
+    public function generateSnapshot(Request $request)
+    {
+        $request->validate([
+            'event_id' => 'required|exists:events,id',
+            'tanggal_summary' => 'required|date',
+            'sisa_galon' => 'required|integer|min:0',
+            'catatan_harian' => 'nullable|string',
+        ]);
 
-    $summary = EventSummary::where('event_id', $event->id)
-                           ->whereDate('tanggal_summary', $tanggal)
-                           ->first();
+        $event = Event::find($request->event_id);
+        $tanggal = Carbon::parse($request->tanggal_summary);
 
-    // --- TARIK LOG DARI KASIR ---
-    $logistikNotes = LogPenggunaanLogistik::whereDate('tanggal_penggunaan', $tanggal)
-                        ->whereNotNull('catatan')
-                        ->get();
+        // 1. KALKULASI LOGISTIK
+        $logistikUsage = LogPenggunaanLogistik::with('inventarisLogistik:id,nama_item,satuan')
+            ->whereDate('tanggal_penggunaan', $tanggal)
+            ->select('inventaris_logistik_id', DB::raw('SUM(jumlah_digunakan) as total_digunakan'))
+            ->groupBy('inventaris_logistik_id')
+            ->get();
 
-    $makananNotes = Distribusi::whereDate('created_at', $tanggal)
-                        ->whereNotNull('catatan')
-                        ->with('kelompok:id,nama')
-                        ->get();
-
-    // --- KALKULASI PREVIEW (LOGIKA BARU DINAMIS) ---
-    $rekapLogistik = LogPenggunaanLogistik::with('inventarisLogistik:id,nama_item,satuan')
-        ->whereDate('tanggal_penggunaan', $tanggal)
-        // Gunakan DB::raw() untuk menjumlahkan
-        ->select('inventaris_logistik_id', DB::raw('SUM(jumlah_digunakan) as total_digunakan'))
-        ->groupBy('inventaris_logistik_id')
-        ->get()
-        ->map(function ($log) {
-            // Ubah data menjadi array yang rapi
+        $rekapLogistikSnapshot = $logistikUsage->map(function ($log) {
             return [
                 'nama_item' => $log->inventarisLogistik->nama_item ?? 'Item Dihapus',
                 'total_digunakan' => (int) $log->total_digunakan,
                 'satuan' => $log->inventarisLogistik->satuan ?? 'pcs'
             ];
-        });
+        })->values()->all();
 
-    return view('admin.summary.generate', compact(
-        'event', 
-        'tanggal', 
-        'summary', 
-        'logistikNotes', 
-        'makananNotes',
-        'rekapLogistik' 
-    ));
-}
+        // 2. KALKULASI PENGGUNAAN MAKANAN (DARI DETAIL - LEBIH AKURAT)
+        // Mengambil data dari tabel distribusi_details yang menyimpan vendor_id_snapshot
+        $rekapMakananQuery = DistribusiDetail::query()
+            ->join('distribusis', 'distribusi_details.distribusi_id', '=', 'distribusis.id')
+            ->whereDate('distribusis.created_at', $tanggal)
+            ->where('distribusis.tipe', 'makanan')
+            ->with('vendor')
+            ->select('vendor_id_snapshot', DB::raw('count(*) as total'))
+            ->groupBy('vendor_id_snapshot')
+            ->get();
 
-    /**
-     * PERBAIKAN: Proses kalkulasi dan penyimpanan snapshot (Lengkap)
-     */
-    public function generateSnapshot(Request $request)
-{
-    $request->validate([
-        'event_id' => 'required|exists:events,id',
-        'tanggal_summary' => 'required|date',
-        'sisa_galon' => 'required|integer|min:0',
-        'catatan_harian' => 'nullable|string',
-    ]);
+        $rekapMakananSnapshot = [];
+        foreach ($rekapMakananQuery as $item) {
+            $rekapMakananSnapshot[] = [
+                'vendor_nama' => $item->vendor->nama_vendor ?? 'Vendor Terhapus',
+                'total_diambil' => $item->total
+            ];
+        }
 
-    $event = Event::find($request->event_id);
-    $tanggal = Carbon::parse($request->tanggal_summary);
+        // 3. Simpan Snapshot
+        $summary = EventSummary::updateOrCreate(
+            [
+                'event_id' => $event->id,
+                'tanggal_summary' => $tanggal,
+            ],
+            [
+                'rekap_penggunaan_logistik' => $rekapLogistikSnapshot,
+                'rekap_penggunaan_makanan' => $rekapMakananSnapshot,
+                'vendor_bertugas_hari_ini' => [], // Bisa dikosongkan atau diisi manual
+                'sisa_galon' => $request->sisa_galon, 
+                'catatan_harian' => $request->catatan_harian,
+            ]
+        );
 
-    // --- MULAI LOGIKA KALKULASI (SAAT GENERATE) ---
-
-    // 1. KALKULASI LOGISTIK (DINAMIS)
-    $logistikUsage = LogPenggunaanLogistik::with('inventarisLogistik:id,nama_item,satuan')
-        ->whereDate('tanggal_penggunaan', $tanggal)
-        ->select('inventaris_logistik_id', DB::raw('SUM(jumlah_digunakan) as total_digunakan'))
-        ->groupBy('inventaris_logistik_id')
-        ->get();
-
-    $rekapLogistikSnapshot = $logistikUsage->map(function ($log) {
-        return [
-            'nama_item' => $log->inventarisLogistik->nama_item ?? 'Item Dihapus',
-            'total_digunakan' => (int) $log->total_digunakan,
-            'satuan' => $log->inventarisLogistik->satuan ?? 'pcs'
-        ];
-    })->values()->all(); // ->values() untuk reset keys
-
-    // 2. KALKULASI VENDOR BERTUGAS
-    $vendorNames = Kelompok::whereHas('vendor')
-                    ->with('vendor:id,nama_vendor')
-                    ->get()
-                    ->pluck('vendor.nama_vendor')
-                    ->unique()
-                    ->values()
-                    ->all();
-
-    // 3. KALKULASI PENGGUNAAN MAKANAN
-    $distribusis = Distribusi::with('kelompok.vendor')
-                    ->where('tipe', 'makanan')
-                    ->whereDate('created_at', $tanggal)
-                    ->get();
-
-    $rekapMakanan = $distribusis
-        ->filter(fn($dist) => $dist->kelompok && $dist->kelompok->vendor)
-        ->groupBy('kelompok.vendor.nama_vendor')
-        ->map(fn($group) => $group->sum('jumlah_pengambilan'));
-
-    $rekapMakananSnapshot = [];
-    foreach ($rekapMakanan as $namaVendor => $total) {
-        $rekapMakananSnapshot[] = ['vendor_nama' => $namaVendor, 'total_diambil' => $total];
+        return redirect()->route('admin.summaries.show', $summary)->with('success', 'Laporan harian berhasil di-generate.');
     }
 
-    // --- SELESAI KALKULASI ---
-
-    // 4. Simpan sebagai Snapshot
-    $summary = EventSummary::updateOrCreate(
-        [
-            'event_id' => $event->id,
-            'tanggal_summary' => $tanggal,
-        ],
-        [
-            // Data Kalkulasi
-            'rekap_penggunaan_logistik' => $rekapLogistikSnapshot, // <-- DATA BARU
-            'rekap_penggunaan_makanan' => $rekapMakananSnapshot,
-            'vendor_bertugas_hari_ini' => $vendorNames,
-
-            // Data Input Manual Admin
-            'sisa_galon' => $request->sisa_galon, 
-            'catatan_harian' => $request->catatan_harian,
-        ]
-    );
-
-    return redirect()->route('admin.summaries.show', $summary)
-                     ->with('success', 'Laporan harian berhasil di-generate/update.');
-}
-
-    /**
-     * Menampilkan detail satu rekap (Read-Only)
-     */
     public function show(EventSummary $summary)
     {
         return view('admin.summary.show', compact('summary'));

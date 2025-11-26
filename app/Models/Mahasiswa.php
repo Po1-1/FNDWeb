@@ -14,19 +14,17 @@ class Mahasiswa extends Model
         'nama',
         'prodi',
         'kelompok_id',
-        'set_vendor',
         'no_urut',
         'is_vegan',
         'user_id',
+        'custom_vendor_id', // Baru
     ];
 
-    // Relasi: Satu Mahasiswa (Mentor) memiliki satu akun User
     public function user()
     {
         return $this->belongsTo(User::class);
     }
 
-    // Relasi: Satu Mahasiswa bisa punya banyak Alergi (Many-to-Many)
     public function alergi()
     {
         return $this->belongsToMany(Alergi::class, 'mahasiswa_alergi');
@@ -35,5 +33,23 @@ class Mahasiswa extends Model
     public function kelompok()
     {
         return $this->belongsTo(Kelompok::class);
+    }
+
+    // Relasi Vendor Khusus
+    public function customVendor()
+    {
+        return $this->belongsTo(Vendor::class, 'custom_vendor_id');
+    }
+
+    // Logika Penentuan Vendor (Penting!)
+    public function getVendorFor($hari, $waktu)
+    {
+        // 1. Cek apakah anak ini punya vendor khusus? (Override)
+        if ($this->custom_vendor_id) {
+            return $this->customVendor;
+        }
+
+        // 2. Jika tidak, ambil vendor kelompok pada waktu tersebut
+        return $this->kelompok->getVendorOn($hari, $waktu);
     }
 }
