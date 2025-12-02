@@ -18,10 +18,10 @@ return new class extends Migration
 
             // --- KONSOLIDASI ---
             $table->foreignId('kelompok_id')
-                  ->nullable()
-                  ->constrained('kelompoks')
-                  ->onDelete('set null');
-            
+                ->nullable()
+                ->constrained('kelompoks')
+                ->onDelete('set null');
+
             $table->enum('tipe', ['makanan', 'logistik']);
 
             $table->integer('jumlah_pengambilan')->nullable(); // Untuk makanan
