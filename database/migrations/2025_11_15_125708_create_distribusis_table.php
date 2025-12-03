@@ -16,7 +16,7 @@ return new class extends Migration
             $table->foreignId('event_id')->nullable()->constrained('events')->onDelete('set null');
             $table->foreignId('user_id')->nullable()->constrained('users')->onDelete('set null'); // Kasir
 
-            // --- KONSOLIDASI ---
+            
             $table->foreignId('kelompok_id')
                 ->nullable()
                 ->constrained('kelompoks')
@@ -27,7 +27,6 @@ return new class extends Migration
             $table->integer('jumlah_pengambilan')->nullable(); // Untuk makanan
 
             $table->text('catatan')->nullable(); // (deskripsi_pengambilan diganti nama)
-            // -------------------
 
             $table->timestamps(); // Waktu pengambilan
         });

@@ -11,7 +11,17 @@
             <div class="card-body">
                 <div class="mb-3">
                     <label class="form-label fw-bold">Nama Kelompok</label>
-                    <input type="text" class="form-control" name="nama" value="{{ $kelompok->nama }}">
+
+                    {{-- Tambahkan class @error dan value old() --}}
+                    <input type="text" class="form-control @error('nama') is-invalid @enderror" name="nama"
+                        value="{{ old('nama', $kelompok->nama) }}" required>
+
+                    {{-- Tambahkan blok ini untuk menampilkan pesan error --}}
+                    @error('nama')
+                        <div class="invalid-feedback">
+                            Nama kelompok ini sudah digunakan, silakan pilih nama lain.
+                        </div>
+                    @enderror
                 </div>
             </div>
         </div>
@@ -20,8 +30,9 @@
             <div class="card-header bg-primary text-white">Anggota & Kebutuhan Khusus</div>
             <div class="card-body table-responsive">
                 <p class="text-muted small">
-                    Anda dapat mengatur vendor khusus untuk mahasiswa tertentu (misal: alergi parah). 
-                    Jika dibiarkan "Ikut Jadwal Kelompok", mahasiswa akan mengikuti vendor yang diatur di tabel jadwal di bawah.
+                    Anda dapat mengatur vendor khusus untuk mahasiswa tertentu (misal: alergi parah).
+                    Jika dibiarkan "Ikut Jadwal Kelompok", mahasiswa akan mengikuti vendor yang diatur di tabel jadwal
+                    di bawah.
                 </p>
                 <table class="table table-bordered table-hover align-middle">
                     <thead class="table-light">
@@ -33,30 +44,36 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach($kelompok->mahasiswas as $mhs)
-                        <tr>
-                            <td>{{ $mhs->nama }}</td>
-                            <td>
-                                @if($mhs->is_vegan) <span class="badge bg-success">Vegan</span> @else - @endif
-                            </td>
-                            <td>
-                                @forelse($mhs->alergi as $a) 
-                                    <span class="badge bg-danger">{{ $a->nama }}</span> 
-                                @empty 
-                                    <span class="text-muted">-</span> 
-                                @endforelse
-                            </td>
-                            <td>
-                                <select name="custom_vendor[{{ $mhs->id }}]" class="form-select form-select-sm">
-                                    <option value="">-- Ikut Jadwal Kelompok --</option>
-                                    @foreach($vendors as $v)
-                                        <option value="{{ $v->id }}" {{ $mhs->custom_vendor_id == $v->id ? 'selected' : '' }}>
-                                            {{ $v->nama_vendor }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                            </td>
-                        </tr>
+                        @foreach ($kelompok->mahasiswas as $mhs)
+                            <tr>
+                                <td>{{ $mhs->nama }}</td>
+                                <td>
+                                    @if ($mhs->is_vegan)
+                                        <span class="badge bg-success">Vegan</span>
+                                    @else
+                                        -
+                                    @endif
+                                </td>
+                                <td>
+                                    @forelse($mhs->alergi as $a)
+                                        <span class="badge bg-danger">{{ $a->nama }}</span>
+                                    @empty
+                                        <span class="text-muted">-</span>
+                                    @endforelse
+                                </td>
+                                <td>
+                                    <select name="custom_vendor[{{ $mhs->id }}]"
+                                        class="form-select form-select-sm">
+                                        <option value="">-- Ikut Jadwal Kelompok --</option>
+                                        @foreach ($vendors as $v)
+                                            <option value="{{ $v->id }}"
+                                                {{ $mhs->custom_vendor_id == $v->id ? 'selected' : '' }}>
+                                                {{ $v->nama_vendor }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </td>
+                            </tr>
                         @endforeach
                     </tbody>
                 </table>
@@ -78,27 +95,32 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @for($h = 1; $h <= $totalHari; $h++)
-                        <tr>
-                            <td class="fw-bold">{{ $h }}</td>
-                            @foreach(['pagi', 'siang', 'sore', 'malam'] as $waktu)
-                            <td>
-                                @php
-                                    // Cari data existing
-                                    $existing = $kelompok->jadwal->where('hari_ke', $h)->where('waktu_makan', $waktu)->first();
-                                    $val = $existing ? $existing->vendor_id : '';
-                                @endphp
-                                <select name="jadwal[{{ $h }}][{{ $waktu }}]" class="form-select form-select-sm">
-                                    <option value="">-- Pilih --</option>
-                                    @foreach($vendors as $v)
-                                        <option value="{{ $v->id }}" {{ $val == $v->id ? 'selected' : '' }}>
-                                            {{ $v->nama_vendor }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                            </td>
-                            @endforeach
-                        </tr>
+                        @for ($h = 1; $h <= $totalHari; $h++)
+                            <tr>
+                                <td class="fw-bold">{{ $h }}</td>
+                                @foreach (['pagi', 'siang', 'sore', 'malam'] as $waktu)
+                                    <td>
+                                        @php
+                                            // Cari data existing
+                                            $existing = $kelompok->jadwal
+                                                ->where('hari_ke', $h)
+                                                ->where('waktu_makan', $waktu)
+                                                ->first();
+                                            $val = $existing ? $existing->vendor_id : '';
+                                        @endphp
+                                        <select name="jadwal[{{ $h }}][{{ $waktu }}]"
+                                            class="form-select form-select-sm">
+                                            <option value="">-- Pilih --</option>
+                                            @foreach ($vendors as $v)
+                                                <option value="{{ $v->id }}"
+                                                    {{ $val == $v->id ? 'selected' : '' }}>
+                                                    {{ $v->nama_vendor }}
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                    </td>
+                                @endforeach
+                            </tr>
                         @endfor
                     </tbody>
                 </table>

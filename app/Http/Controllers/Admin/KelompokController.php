@@ -56,6 +56,10 @@ class KelompokController extends Controller
     // UPDATE: Menyimpan Jadwal & Custom Vendor
     public function update(Request $request, Kelompok $kelompok)
     {
+        $request->validate([
+            'nama' => 'required|string|max:255|unique:kelompoks,nama,' . $kelompok->id,
+        ]);
+
         // 1. Update Nama Dasar
         $kelompok->update(['nama' => $request->nama]);
 
