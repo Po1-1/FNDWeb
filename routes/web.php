@@ -30,7 +30,6 @@ use App\Http\Controllers\Admin\KelompokController;
 | Rute ini bisa diakses siapa saja, bahkan yang belum login.
 */
 Route::get('/', [GuestController::class, 'index'])->name('home');
-Route::get('/search', [GuestController::class, 'search'])->name('guest.search');
 Route::get('/apa-itu-fnd', [GuestController::class, 'about'])->name('guest.about');
 
 /*
@@ -129,7 +128,8 @@ Route::middleware(['auth', EnsureUserHasRole::class . ':mentor'])
     ->group(function () {
         
         Route::get('/dashboard', [MentorDashboardController::class, 'index'])->name('dashboard');
-        
-        // Rute untuk melihat data kelompoknya
         Route::get('/kelompok', [MentorDashboardController::class, 'showKelompok'])->name('kelompok.show');
+        
+        // TAMBAHKAN RUTE PENCARIAN DI SINI
+        Route::get('/search', [MentorDashboardController::class, 'search'])->name('search');
 });

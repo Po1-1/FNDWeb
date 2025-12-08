@@ -1,12 +1,8 @@
 <x-app-layout>
-    <!-- Bagian Sapaan (Hero Section) -->
-    <div class="row mb-5 align-items-center">
+    <div class="row align-items-center mb-4">
         <div class="col-md-8">
-            <h1 class="display-6 fw-bold text-dark mb-2">Halo, {{ Auth::user()->name }}! 👋</h1>
-            <p class="text-muted fs-5">
-                Siap memantau distribusi hari ini? Berikut ringkasan aktivitas terbaru untuk event 
-                <span class="text-primary fw-bold">{{ $activeEvent->nama_event ?? 'FND' }}</span>.
-            </p>
+            <h1 class="h3 fw-bold text-dark mb-2">Selamat datang, {{ Auth::user()->name }}.</h1>
+            <p class="text-muted mb-0">Ringkasan cepat operasional hari ini.</p>
         </div>
         <div class="col-md-4 text-md-end">
             <div class="d-inline-block bg-white px-4 py-2 rounded-pill shadow-sm border">
@@ -15,12 +11,12 @@
             </div>
         </div>
     </div>
-    
-    <!-- Statistik Utama dengan Desain "Glass" -->
+
+    <!-- Statistik Utama -->
     <div class="row g-4 mb-5">
         <!-- Card Mahasiswa -->
         <div class="col-md-4">
-            <div class="card h-100 border-0 bg-primary bg-gradient text-white shadow-lg position-relative overflow-hidden hover-effect">
+            <div class="card h-100 border-0 bg-primary bg-gradient text-white shadow-lg position-relative overflow-hidden">
                 <!-- Dekorasi Background -->
                 <div class="position-absolute top-0 end-0 opacity-25 translate-middle-y me-n3 mt-n3">
                     <i class="bi bi-people-fill" style="font-size: 8rem;"></i>
@@ -43,7 +39,7 @@
         <div class="col-md-8">
             <div class="row g-4 h-100">
                 <div class="col-md-6">
-                    <div class="card h-100 border-0 hover-effect">
+                    <div class="card h-100 border-0">
                         <div class="card-body p-4 d-flex flex-column justify-content-between">
                             <div class="d-flex justify-content-between align-items-start mb-3">
                                 <div>
@@ -60,7 +56,7 @@
                 </div>
                 
                 <div class="col-md-6">
-                    <div class="card h-100 border-0 hover-effect">
+                    <div class="card h-100 border-0">
                         <div class="card-body p-4 d-flex flex-column justify-content-between">
                             <div class="d-flex justify-content-between align-items-start mb-3">
                                 <div>

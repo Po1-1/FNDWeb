@@ -1,24 +1,13 @@
 // 1. Konfigurasi dan Import Bootstrap
 @use 'bootstrap/scss/bootstrap' with (
-    $font-family-sans-serif: ('Inter', 'Nunito', system-ui, sans-serif), // Font yang lebih bulat & ramah
-    
-    // Palet Warna "Human" (Lebih soft, tidak neon)
-    $primary: #4f46e5,   // Indigo
-    $secondary: #64748b, // Slate Grey
-    $success: #10b981,   // Emerald
-    $info: #0ea5e9,      // Sky
-    $warning: #f59e0b,   // Amber
-    $danger: #ef4444,    // Red
-    $light: #f8fafc,     
-    $dark: #1e293b,      
-    
-    $border-radius: 1rem,      // Sudut sangat membulat (friendly)
-    $border-radius-lg: 1.5rem,
-    $border-radius-sm: 0.75rem,
-    
-    $box-shadow-sm: 0 2px 4px rgba(148, 163, 184, 0.1),
-    $box-shadow: 0 10px 15px -3px rgba(148, 163, 184, 0.1),
-    $input-focus-box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.15) // Fokus input yang lembut
+    $font-family-sans-serif: ('Inter', 'Nunito', system-ui, sans-serif),
+    $primary: #2563eb, $secondary: #6b7280, $success: #16a34a,
+    $info: #0ea5e9, $warning: #f59e0b, $danger: #dc2626,
+    $light: #f9fafb, $dark: #111827,
+    $border-radius: .75rem, $border-radius-lg: 1rem, $border-radius-sm: .5rem,
+    $box-shadow-sm: 0 2px 6px rgba(0,0,0,.06),
+    $box-shadow: 0 10px 30px rgba(0,0,0,.08),
+    $input-focus-box-shadow: 0 0 0 3px rgba(37,99,235,.18)
 );
 
 // 2. Import Google Fonts (Inter & Nunito untuk heading)
@@ -28,13 +17,8 @@
 
 // Background yang "Hidup" (Mesh Gradient halus)
 body {
-    background-color: #f3f4f6;
-    background-image: 
-        radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.15) 0px, transparent 50%),
-        radial-gradient(at 100% 0%, rgba(16, 185, 129, 0.1) 0px, transparent 50%),
-        radial-gradient(at 100% 100%, rgba(245, 158, 11, 0.1) 0px, transparent 50%);
-    background-attachment: fixed;
-    color: #334155;
+    background: #f5f6f8;
+    color: #1f2937;
     font-family: 'Inter', sans-serif;
 }
 
@@ -45,24 +29,20 @@ h1, h2, h3, h4, h5, h6, .navbar-brand {
 
 // Glassmorphism Card (Efek Kaca)
 .card {
-    background: rgba(255, 255, 255, 0.8); // Transparan
-    backdrop-filter: blur(12px);          // Blur belakangnya
-    border: 1px solid rgba(255, 255, 255, 0.6);
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 6px 18px rgba(0,0,0,.06);
+    border-radius: 16px;
+    transition: transform .15s ease, box-shadow .15s ease;
     
     &.hover-effect:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 20px 30px rgba(79, 70, 229, 0.1);
-        border-color: rgba(79, 70, 229, 0.2);
+        transform: translateY(-2px);
+        box-shadow: 0 12px 26px rgba(0,0,0,.08);
     }
 
     .card-header {
-        background: transparent;
-        border-bottom: 1px solid rgba(0,0,0,0.03);
-        padding: 1.5rem;
-        
-        h5 { margin-bottom: 0; font-weight: 700; }
+        background: #fff;
+        border-bottom: 1px solid #e5e7eb;
     }
     
     .card-body {
@@ -72,22 +52,19 @@ h1, h2, h3, h4, h5, h6, .navbar-brand {
 
 // Navbar Mengambang
 .navbar {
-    background: rgba(255, 255, 255, 0.9) !important;
-    backdrop-filter: blur(10px);
-    border-bottom: 1px solid rgba(255,255,255,0.5);
-    padding-top: 1rem;
-    padding-bottom: 1rem;
+    background: #fff !important;
+    border-bottom: 1px solid #e5e7eb;
     
     .nav-link {
         font-weight: 600;
-        color: #64748b !important;
-        padding: 0.5rem 1rem;
-        border-radius: 0.75rem;
+        color: #4b5563 !important;
+        border-radius: 10px;
+        padding: .55rem 1rem;
         transition: all 0.2s;
         
         &:hover, &.active {
-            color: #4f46e5 !important;
-            background: rgba(79, 70, 229, 0.08);
+            color: #2563eb !important;
+            background: rgba(37,99,235,.08);
         }
     }
 }
@@ -97,10 +74,8 @@ h1, h2, h3, h4, h5, h6, .navbar-brand {
     --bs-table-bg: transparent;
     
     th {
-        font-size: 0.8rem;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-        color: #94a3b8;
+        text-transform: none;
+        letter-spacing: normal;
         font-weight: 700;
         border-bottom: 2px solid #f1f5f9;
         padding-bottom: 1rem;
@@ -118,17 +93,9 @@ h1, h2, h3, h4, h5, h6, .navbar-brand {
 
 // Tombol Pill (Lebih ramah)
 .btn {
-    border-radius: 50rem; 
-    padding: 0.6rem 1.5rem;
+    border-radius: 12px; 
     font-weight: 600;
-    letter-spacing: 0.01em;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-    transition: all 0.2s;
-    
-    &:hover {
-        transform: translateY(-1px);
-        box-shadow: 0 6px 10px rgba(0,0,0,0.1);
-    }
+    box-shadow: 0 4px 10px rgba(0,0,0,.05);
 }
 
 // Badge Pastel
