@@ -1,150 +1,141 @@
-// 1. Konfigurasi dan Import Bootstrap (WAJIB PALING ATAS)
+// 1. Konfigurasi dan Import Bootstrap
 @use 'bootstrap/scss/bootstrap' with (
-    $font-family-sans-serif: ('Inter', system-ui, -apple-system, sans-serif),
+    $font-family-sans-serif: ('Inter', 'Nunito', system-ui, sans-serif), // Font yang lebih bulat & ramah
     
-    // Palet Warna yang Lebih Cerah & Ceria
-    $primary: #6366f1,   // Indigo cerah
-    $secondary: #64748b, // Slate
+    // Palet Warna "Human" (Lebih soft, tidak neon)
+    $primary: #4f46e5,   // Indigo
+    $secondary: #64748b, // Slate Grey
     $success: #10b981,   // Emerald
-    $info: #0ea5e9,      // Sky Blue
+    $info: #0ea5e9,      // Sky
     $warning: #f59e0b,   // Amber
     $danger: #ef4444,    // Red
-    $light: #f8fafc,     // Hampir putih
-    $dark: #1e293b,      // Slate dark
+    $light: #f8fafc,     
+    $dark: #1e293b,      
     
-    $border-radius: 0.75rem, // Lebih membulat agar terlihat friendly
-    $border-radius-lg: 1rem,
-    $border-radius-sm: 0.5rem,
+    $border-radius: 1rem,      // Sudut sangat membulat (friendly)
+    $border-radius-lg: 1.5rem,
+    $border-radius-sm: 0.75rem,
     
-    $box-shadow-sm: (0 2px 4px 0 rgb(0 0 0 / 0.05)),
-    $box-shadow: (0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -2px rgb(0 0 0 / 0.05))
+    $box-shadow-sm: 0 2px 4px rgba(148, 163, 184, 0.1),
+    $box-shadow: 0 10px 15px -3px rgba(148, 163, 184, 0.1),
+    $input-focus-box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.15) // Fokus input yang lembut
 );
 
-// 2. Import Font
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+// 2. Import Google Fonts (Inter & Nunito untuk heading)
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Nunito:wght@600;700;800&display=swap');
 
 // 3. Custom Styles
 
-// Background Body dengan Gradasi Halus
+// Background yang "Hidup" (Mesh Gradient halus)
 body {
-    background: linear-gradient(135deg, #f0f9ff 0%, #e0e7ff 100%);
-    min-height: 100vh;
+    background-color: #f3f4f6;
+    background-image: 
+        radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.15) 0px, transparent 50%),
+        radial-gradient(at 100% 0%, rgba(16, 185, 129, 0.1) 0px, transparent 50%),
+        radial-gradient(at 100% 100%, rgba(245, 158, 11, 0.1) 0px, transparent 50%);
+    background-attachment: fixed;
     color: #334155;
+    font-family: 'Inter', sans-serif;
 }
 
-// Card Styling yang Lebih "Pop"
+h1, h2, h3, h4, h5, h6, .navbar-brand {
+    font-family: 'Nunito', sans-serif; // Heading lebih playful
+    color: #1e293b;
+}
+
+// Glassmorphism Card (Efek Kaca)
 .card {
-    border: none;
-    background: rgba(255, 255, 255, 0.9); // Sedikit transparan
-    backdrop-filter: blur(10px); // Efek kaca buram
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    background: rgba(255, 255, 255, 0.8); // Transparan
+    backdrop-filter: blur(12px);          // Blur belakangnya
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
     
     &.hover-effect:hover {
         transform: translateY(-5px);
-        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        box-shadow: 0 20px 30px rgba(79, 70, 229, 0.1);
+        border-color: rgba(79, 70, 229, 0.2);
     }
 
     .card-header {
-        background-color: transparent;
-        border-bottom: 1px solid rgba(0,0,0,0.05);
-        font-weight: 700;
-        padding: 1.25rem;
-        color: #6366f1; // Warna header card mengikuti primary
+        background: transparent;
+        border-bottom: 1px solid rgba(0,0,0,0.03);
+        padding: 1.5rem;
+        
+        h5 { margin-bottom: 0; font-weight: 700; }
     }
-}
-
-// Table Styling
-.table {
-    th {
-        font-weight: 700;
-        text-transform: uppercase;
-        font-size: 0.75rem;
-        letter-spacing: 0.05em;
-        color: #475569;
-        background-color: rgba(241, 245, 249, 0.8) !important;
-        border-bottom: 2px solid #e2e8f0;
-    }
-    td {
-        vertical-align: middle;
-    }
-    // Baris tabel belang yang halus
-    &.table-hover tbody tr:hover {
-        background-color: rgba(99, 102, 241, 0.05); // Highlight ungu muda saat di-hover
-    }
-}
-
-// Navbar Styling dengan Gradasi
-.navbar {
-    background: linear-gradient(to right, #ffffff, #f8fafc) !important;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-    border-bottom: 1px solid rgba(255,255,255,0.5);
     
-    .navbar-brand {
-        font-weight: 800;
-        background: linear-gradient(45deg, #4f46e5, #06b6d4); // Text gradient untuk logo
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        letter-spacing: -0.025em;
+    .card-body {
+        padding: 1.5rem;
     }
+}
 
+// Navbar Mengambang
+.navbar {
+    background: rgba(255, 255, 255, 0.9) !important;
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(255,255,255,0.5);
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+    
     .nav-link {
-        color: #64748b !important;
         font-weight: 600;
-        transition: color 0.2s;
+        color: #64748b !important;
+        padding: 0.5rem 1rem;
+        border-radius: 0.75rem;
+        transition: all 0.2s;
         
         &:hover, &.active {
             color: #4f46e5 !important;
-            background-color: rgba(79, 70, 229, 0.05);
-            border-radius: 0.5rem;
+            background: rgba(79, 70, 229, 0.08);
         }
     }
 }
 
-// Button Tweaks - Lebih Berwarna & Gradient
+// Tabel yang "Bernapas"
+.table {
+    --bs-table-bg: transparent;
+    
+    th {
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: #94a3b8;
+        font-weight: 700;
+        border-bottom: 2px solid #f1f5f9;
+        padding-bottom: 1rem;
+    }
+    
+    td {
+        padding-top: 1rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid #f1f5f9;
+        vertical-align: middle;
+    }
+    
+    tr:last-child td { border-bottom: none; }
+}
+
+// Tombol Pill (Lebih ramah)
 .btn {
+    border-radius: 50rem; 
+    padding: 0.6rem 1.5rem;
     font-weight: 600;
-    padding: 0.6rem 1.2rem;
-    border: none;
+    letter-spacing: 0.01em;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
     transition: all 0.2s;
     
-    &-primary {
-        background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
-        box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
-        
-        &:hover {
-            background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);
-            transform: translateY(-1px);
-            box-shadow: 0 6px 15px rgba(79, 70, 229, 0.4);
-        }
-    }
-
-    &-success {
-        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
-    }
-
-    &-danger {
-        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-        box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
-    }
-    
-    &-white {
-        background: white;
-        color: #4f46e5;
-        &:hover {
-            background: #f8fafc;
-            color: #4338ca;
-        }
+    &:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 6px 10px rgba(0,0,0,0.1);
     }
 }
 
-// Badge Tweaks - Warna Pastel
+// Badge Pastel
 .badge {
+    padding: 0.5em 1em;
+    border-radius: 0.5rem;
     font-weight: 600;
-    padding: 0.6em 0.85em;
-    letter-spacing: 0.025em;
-    border-radius: 2rem; // Badge berbentuk pil
 }
 
 // Form Controls

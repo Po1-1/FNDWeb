@@ -1,19 +1,21 @@
 <x-app-layout>
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1>Manajemen Mahasiswa</h1>
-        <div>
-            <a href="{{ route('admin.mahasiswa.import.form') }}" class="btn btn-success me-2">
-                Import XLSX
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-center mb-4 gap-3">
+        <h1 class="h3 mb-0">Manajemen Mahasiswa</h1>
+        
+        <div class="d-flex flex-wrap gap-2">
+            <a href="{{ route('admin.mahasiswa.import.form') }}" class="btn btn-success">
+                <i class="bi bi-file-earmark-spreadsheet me-1"></i> Import XLSX
             </a>
             <a href="{{ route('admin.mahasiswa.create') }}" class="btn btn-primary">
-                + Tambah Mahasiswa
+                <i class="bi bi-plus-lg me-1"></i> Tambah Mahasiswa
             </a>
+            
             <form action="{{ route('admin.mahasiswa.destroyAll') }}" method="POST"
                 onsubmit="return confirm('⚠️ PERINGATAN TAHAP 1 ⚠️\n\nApakah Anda yakin ingin menghapus SEMUA data mahasiswa?\n\n(Data Panitia/Mentor TIDAK akan dihapus)') && confirm('⛔ PERINGATAN TERAKHIR (TAHAP 2) ⛔\n\nTindakan ini TIDAK DAPAT DIBATALKAN!\nSemua data riwayat makan dan alergi mahasiswa juga akan dihapus permanen.\n\nApakah Anda benar-benar yakin ingin melanjutkan?');">
                 @csrf
                 @method('DELETE')
                 <button type="submit" class="btn btn-danger">
-                    <i class="bi bi-trash"></i> Reset Data (Hapus Semua)
+                    <i class="bi bi-trash me-1"></i> Reset Data
                 </button>
             </form>
         </div>
@@ -23,9 +25,11 @@
         <div class="card-body">
             <form method="GET" action="{{ route('admin.mahasiswa.index') }}">
                 <div class="input-group">
-                    <input type="text" name="search" class="form-control"
+                    <input type="text" name="search" class="form-control border-end-0"
                         placeholder="Cari Nama, NIM, atau Kelompok..." value="{{ request('search') }}">
-                    <button class="btn btn-secondary" type="submit">Cari</button>
+                    <button class="btn btn-outline-secondary border-start-0 ps-3 pe-4" type="submit">
+                        <i class="bi bi-search"></i>
+                    </button>
                 </div>
             </form>
         </div>
