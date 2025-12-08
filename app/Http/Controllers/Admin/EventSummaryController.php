@@ -9,7 +9,7 @@ use App\Models\LogPenggunaanLogistik;
 use App\Models\InventarisLogistik;
 use App\Models\Kelompok;
 use App\Models\Distribusi;
-use App\Models\DistribusiDetail; // Tambahkan ini
+use App\Models\DistribusiDetail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -23,9 +23,9 @@ class EventSummaryController extends Controller
         $selectedEventId = $request->get('event_id', $activeEvent->id ?? null);
 
         $summaries = EventSummary::where('event_id', $selectedEventId)
-                                 ->orderBy('tanggal_summary', 'desc')
-                                 ->paginate(15);
-                                 
+            ->orderBy('tanggal_summary', 'desc')
+            ->paginate(15);
+
         return view('admin.summary.index', compact('summaries', 'events', 'selectedEventId'));
     }
 
@@ -40,7 +40,7 @@ class EventSummaryController extends Controller
         $summary = EventSummary::where('event_id', $event->id)->whereDate('tanggal_summary', $tanggal)->first();
 
         $logistikNotes = LogPenggunaanLogistik::whereDate('tanggal_penggunaan', $tanggal)->whereNotNull('catatan')->get();
-        
+
         // Note: Makanan notes diambil dari header
         $makananNotes = Distribusi::whereDate('created_at', $tanggal)->whereNotNull('catatan')->with('kelompok:id,nama')->get();
 
@@ -115,8 +115,7 @@ class EventSummaryController extends Controller
             [
                 'rekap_penggunaan_logistik' => $rekapLogistikSnapshot,
                 'rekap_penggunaan_makanan' => $rekapMakananSnapshot,
-                'vendor_bertugas_hari_ini' => [], // Bisa dikosongkan atau diisi manual
-                'sisa_galon' => $request->sisa_galon, 
+                'sisa_galon' => $request->sisa_galon,
                 'catatan_harian' => $request->catatan_harian,
             ]
         );

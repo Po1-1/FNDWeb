@@ -94,17 +94,6 @@
                             </table>
                         </div>
                     @endif
-
-                    <div class="mt-3">
-                        <small class="text-muted fw-bold">Daftar Vendor Bertugas Hari Ini:</small>
-                        <div class="mt-1">
-                            @forelse ($summary->vendor_bertugas_hari_ini as $vendorName)
-                                <span class="badge bg-outline-secondary border text-dark">{{ $vendorName }}</span>
-                            @empty
-                                <span class="text-muted small">- Tidak ada data -</span>
-                            @endforelse
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>
