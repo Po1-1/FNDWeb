@@ -1,5 +1,5 @@
 <x-app-layout>
-     <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
         <h1>Manajemen Kelompok & Vendor</h1>
         <a href="{{ route('admin.kelompok.create') }}" class="btn btn-primary">
             + Buat Kelompok Baru
@@ -21,17 +21,19 @@
                         @forelse ($kelompoks as $kelompok)
                             <tr>
                                 <td>{{ $kelompok->nama }}</td>
-                                
+
                                 <td class="text-center">
                                     <span class="badge bg-secondary">{{ $kelompok->mahasiswas_count }} Mahasiswa</span>
                                 </td>
-                                
+
                                 <td class="text-end">
-                                    <a href="{{ route('admin.kelompok.edit', $kelompok) }}" class="btn btn-sm btn-warning">
+                                    <a href="{{ route('admin.kelompok.edit', $kelompok) }}"
+                                        class="btn btn-sm btn-warning">
                                         Atur Jadwal & Anggota
                                     </a>
-                                    
-                                    <form action="{{ route('admin.kelompok.destroy', $kelompok) }}" method="POST" class="d-inline" onsubmit="return confirm('Yakin hapus kelompok ini?');">
+
+                                    <form action="{{ route('admin.kelompok.destroy', $kelompok) }}" method="POST"
+                                        class="d-inline" onsubmit="return confirm('Yakin hapus kelompok ini?');">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="btn btn-sm btn-danger ms-1">Hapus</button>
@@ -48,7 +50,7 @@
                     </tbody>
                 </table>
             </div>
-            
+
             <div class="mt-4">
                 {{ $kelompoks->links() }}
             </div>

@@ -8,8 +8,8 @@
             <a href="{{ route('admin.mahasiswa.create') }}" class="btn btn-primary">
                 + Tambah Mahasiswa
             </a>
-            <form action="{{ route('admin.mahasiswa.destroyAll') }}" method="POST" 
-                  onsubmit="return confirm('⚠️ PERINGATAN TAHAP 1 ⚠️\n\nApakah Anda yakin ingin menghapus SEMUA data mahasiswa?\n\n(Data Panitia/Mentor TIDAK akan dihapus)') && confirm('⛔ PERINGATAN TERAKHIR (TAHAP 2) ⛔\n\nTindakan ini TIDAK DAPAT DIBATALKAN!\nSemua data riwayat makan dan alergi mahasiswa juga akan dihapus permanen.\n\nApakah Anda benar-benar yakin ingin melanjutkan?');">
+            <form action="{{ route('admin.mahasiswa.destroyAll') }}" method="POST"
+                onsubmit="return confirm('⚠️ PERINGATAN TAHAP 1 ⚠️\n\nApakah Anda yakin ingin menghapus SEMUA data mahasiswa?\n\n(Data Panitia/Mentor TIDAK akan dihapus)') && confirm('⛔ PERINGATAN TERAKHIR (TAHAP 2) ⛔\n\nTindakan ini TIDAK DAPAT DIBATALKAN!\nSemua data riwayat makan dan alergi mahasiswa juga akan dihapus permanen.\n\nApakah Anda benar-benar yakin ingin melanjutkan?');">
                 @csrf
                 @method('DELETE')
                 <button type="submit" class="btn btn-danger">
@@ -23,7 +23,8 @@
         <div class="card-body">
             <form method="GET" action="{{ route('admin.mahasiswa.index') }}">
                 <div class="input-group">
-                    <input type="text" name="search" class="form-control" placeholder="Cari Nama, NIM, atau Kelompok..." value="{{ request('search') }}">
+                    <input type="text" name="search" class="form-control"
+                        placeholder="Cari Nama, NIM, atau Kelompok..." value="{{ request('search') }}">
                     <button class="btn btn-secondary" type="submit">Cari</button>
                 </div>
             </form>
@@ -42,7 +43,8 @@
                             <th>Kelompok</th>
                             <th>Vendor</th>
                             <th>Vegan</th>
-                            <th>Alergi</th> <th>Aksi</th>
+                            <th>Alergi</th>
+                            <th>Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -54,7 +56,8 @@
                                 <td>{{ $mahasiswa->kelompok->nama ?? 'N/A' }}</td>
                                 <td>
                                     @if ($mahasiswa->kelompok && $mahasiswa->kelompok->vendor)
-                                        <span class="badge bg-info">{{ $mahasiswa->kelompok->vendor->nama_vendor }}</span>
+                                        <span
+                                            class="badge bg-info">{{ $mahasiswa->kelompok->vendor->nama_vendor }}</span>
                                     @else
                                         <span class="badge bg-secondary">Belum Diatur</span>
                                     @endif
@@ -65,7 +68,7 @@
                                         <span class="badge bg-secondary">Tidak</span>
                                     @endif
                                 </td>
-                                
+
                                 <td>
                                     @forelse ($mahasiswa->alergi as $alergi)
                                         <span class="badge bg-danger">{{ $alergi->nama }}</span>
@@ -75,9 +78,12 @@
                                 </td>
 
                                 <td>
-                                    <a href="{{ route('admin.mahasiswa.show', $mahasiswa) }}" class="btn btn-sm btn-info">View</a>
-                                    <a href="{{ route('admin.mahasiswa.edit', $mahasiswa) }}" class="btn btn-sm btn-warning">Edit</a>
-                                    <form action="{{ route('admin.mahasiswa.destroy', $mahasiswa) }}" method="POST" class="d-inline" onsubmit="return confirm('Yakin ingin menghapus?');">
+                                    <a href="{{ route('admin.mahasiswa.show', $mahasiswa) }}"
+                                        class="btn btn-sm btn-info">View</a>
+                                    <a href="{{ route('admin.mahasiswa.edit', $mahasiswa) }}"
+                                        class="btn btn-sm btn-warning">Edit</a>
+                                    <form action="{{ route('admin.mahasiswa.destroy', $mahasiswa) }}" method="POST"
+                                        class="d-inline" onsubmit="return confirm('Yakin ingin menghapus?');">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="btn btn-sm btn-danger">Hapus</button>
@@ -92,7 +98,7 @@
                     </tbody>
                 </table>
             </div>
-            
+
             <div class="mt-4">
                 {{ $mahasiswas->links() }}
             </div>
