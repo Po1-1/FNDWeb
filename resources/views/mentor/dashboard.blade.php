@@ -1,60 +1,81 @@
 <x-app-layout>
     <div class="row align-items-center mb-4">
-        <div class="col-md-6">
-            <h1 class="h3 fw-bold text-dark mb-1">Dashboard Mentor</h1>
-            <p class="text-muted mb-0">Selamat datang, {{ $user->name }}!</p>
+        <div class="col-md-8">
+            <h1 class="h3 fw-bold text-dark mb-1">Pencarian Mahasiswa</h1>
+            <p class="text-muted mb-0">Selamat datang, {{ $user->name }}! Gunakan form di bawah untuk mencari data
+                peserta.</p>
         </div>
     </div>
 
-    <!-- KOLOM PENCARIAN BARU UNTUK MENTOR -->
+    <!-- search -->
     <div class="card border-0 shadow-sm rounded-4 mb-4 bg-white">
         <div class="card-body p-4">
-            <label class="form-label fw-bold text-primary mb-2">
-                <i class="bi bi-search me-1"></i> Cari Mahasiswa / Kelompok Lain
-            </label>
-            <form action="{{ route('mentor.search') }}" method="GET">
+            <form action="{{ route('mentor.dashboard') }}" method="GET">
                 <div class="input-group">
                     <input type="text" class="form-control border-end-0 bg-light" name="query"
-                        placeholder="Masukkan NIM, Nama, atau Nama Kelompok..." required>
-                    <button class="btn btn-primary px-4" type="submit">Cari</button>
+                        placeholder="Filter berdasarkan NIM, Nama, atau Kelompok..." value="{{ $query ?? '' }}">
+                    <button class="btn btn-primary px-5" type="submit">
+                        <i class="bi bi-search"></i> Filter
+                    </button>
                 </div>
             </form>
         </div>
     </div>
 
-    <div class="row g-4">
-        <!-- Card Info Mentor -->
-        <div class="col-md-6">
-            <div class="card h-100 border-0 shadow-sm hover-effect">
-                <div class="card-body">
-                    <h5 class="card-title fw-bold mb-3">Profil Anda</h5>
-                    <ul class="list-group list-group-flush">
-                        <li class="list-group-item bg-transparent px-0"><strong>Nama:</strong> {{ $mentorData->nama }}
-                        </li>
-                        <li class="list-group-item bg-transparent px-0"><strong>Prodi:</strong> {{ $mentorData->prodi }}
-                        </li>
-                        <li class="list-group-item bg-transparent px-0"><strong>Kelompok Binaan:</strong> <span
-                                class="badge bg-primary">{{ $mentorData->kelompok->nama ?? 'N/A' }}</span></li>
-                    </ul>
+    <!-- hasil search -->
+    <div class="card shadow-sm border-0 rounded-4 overflow-hidden">
+        <div class="card-body p-0">
+            @if ($results->isEmpty())
+                <div class="text-center py-5">
+                    <div class="mb-3 text-muted opacity-50"><i class="bi bi-emoji-frown fs-1"></i></div>
+                    <h5 class="fw-bold text-muted">Data tidak ditemukan</h5>
+                    @if ($query)
+                        <p class="text-muted small">Tidak ada hasil untuk pencarian "{{ $query }}".</p>
+                    @else
+                        <p class="text-muted small">Belum ada data mahasiswa di dalam sistem.</p>
+                    @endif
                 </div>
-            </div>
-        </div>
-
-        <!-- Card Shortcut -->
-        <div class="col-md-6">
-            <div class="card h-100 border-0 shadow-sm hover-effect bg-primary bg-opacity-10">
-                <div class="card-body d-flex flex-column justify-content-center align-items-center text-center p-5">
-                    <div class="bg-white p-3 rounded-circle text-primary shadow-sm mb-3">
-                        <i class="bi bi-people-fill fs-1"></i>
-                    </div>
-                    <h4 class="fw-bold">Kelompok Saya</h4>
-                    <p class="text-muted small mb-4">Lihat detail anggota, status alergi, dan upload bukti distribusi.
-                    </p>
-                    <a href="{{ route('mentor.kelompok.show') }}" class="btn btn-primary rounded-pill px-4">
-                        Lihat Anggota Kelompok
-                    </a>
+            @else
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="bg-light">
+                            <tr>
+                                <th class="ps-4 py-3">Mahasiswa</th>
+                                <th class="py-3">Kelompok</th>
+                                <th class="py-3">Vendor</th>
+                                <th class="py-3">Status Diet & Alergi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($results as $mahasiswa)
+                                <tr>
+                                    <td class="ps-4">
+                                        <div class="fw-bold text-dark">{{ $mahasiswa->nama }}</div>
+                                        <div class="small text-muted">{{ $mahasiswa->nim }}</div>
+                                    </td>
+                                    <td><span
+                                            class="badge bg-light text-dark border">{{ $mahasiswa->kelompok->nama ?? 'N/A' }}</span>
+                                    </td>
+                                    <td>{{ $mahasiswa->kelompok->vendor->nama_vendor ?? 'Belum Diatur' }}</td>
+                                    <td>
+                                        @if ($mahasiswa->is_vegan)
+                                            <span
+                                                class="badge bg-success bg-opacity-10 text-success rounded-pill">Vegan</span>
+                                        @endif
+                                        @foreach ($mahasiswa->alergi as $alergi)
+                                            <span
+                                                class="badge bg-danger bg-opacity-10 text-danger rounded-pill">{{ $alergi->nama }}</span>
+                                        @endforeach
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
                 </div>
-            </div>
+                @if ($results->hasPages())
+                    <div class="p-3 border-top bg-light">{{ $results->links() }}</div>
+                @endif
+            @endif
         </div>
     </div>
 </x-app-layout>

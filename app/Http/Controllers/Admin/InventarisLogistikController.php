@@ -33,7 +33,7 @@ class InventarisLogistikController extends Controller
         InventarisLogistik::create($request->all());
 
         return redirect()->route('admin.logistik.index')
-                         ->with('success', 'Item logistik berhasil ditambahkan.');
+            ->with('success', 'Item logistik berhasil ditambahkan.');
     }
 
     // Menampilkan detail (opsional, bisa dilewati jika tidak perlu)
@@ -61,16 +61,16 @@ class InventarisLogistikController extends Controller
         $logistik->update($request->all());
 
         return redirect()->route('admin.logistik.index')
-                         ->with('success', 'Item logistik berhasil diperbarui.');
+            ->with('success', 'Item logistik berhasil diperbarui.');
     }
 
     // Hapus item
     public function destroy(InventarisLogistik $logistik)
     {
         // Tambahkan cek relasi jika ada
-        
+
         $logistik->delete();
         return redirect()->route('admin.logistik.index')
-                         ->with('success', 'Item logistik berhasil dihapus.');
+            ->with('success', 'Item logistik berhasil dihapus.');
     }
 }

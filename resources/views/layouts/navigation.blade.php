@@ -1,6 +1,10 @@
 <nav class="navbar navbar-expand-lg sticky-top mb-4">
     <div class="container">
-        <a class="navbar-brand fw-bold text-primary" href="{{ route('dashboard') }}">FNDWeb</a>
+        {{-- UBAH DI SINI: Link logo mengarah ke 'home' (halaman awal), bukan 'dashboard' --}}
+        <a class="navbar-brand fw-bold text-primary" href="{{ route('home') }}">
+            FNDWeb
+        </a>
+        
         <button class="navbar-toggler border-0 shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#appNavbar">
             <span class="navbar-toggler-icon"></span>
         </button>

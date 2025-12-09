@@ -8,8 +8,7 @@ use App\Models\Kelompok;
 use App\Models\Alergi;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
-// PENTING: Tambahkan facade DB untuk operasi manual query
-use Illuminate\Support\Facades\DB; 
+use Illuminate\Support\Facades\DB;
 
 use App\Imports\MahasiswaImport;
 use Maatwebsite\Excel\Facades\Excel;
@@ -23,20 +22,20 @@ class MahasiswaController extends Controller
     public function index(Request $request)
     {
         $search = $request->input('search');
-        
+
         $mahasiswas = Mahasiswa::query()
-            ->with(['kelompok', 'alergi']) 
+            ->with(['kelompok', 'alergi'])
             ->when($search, function ($q, $search) {
                 $q->where('nama', 'LIKE', "%{$search}%")
-                  ->orWhere('nim', 'LIKE', "%{$search}%")
-                  ->orWhereHas('kelompok', function ($kelompokQuery) use ($search) {
-                      $kelompokQuery->where('nama', 'LIKE', "%{$search}%");
-                  });
+                    ->orWhere('nim', 'LIKE', "%{$search}%")
+                    ->orWhereHas('kelompok', function ($kelompokQuery) use ($search) {
+                        $kelompokQuery->where('nama', 'LIKE', "%{$search}%");
+                    });
             })
             ->orderBy('nama')
             ->paginate(15)
             ->appends($request->except('page'));
-                            
+
         return view('admin.mahasiswa.index', compact('mahasiswas'));
     }
 
@@ -47,7 +46,7 @@ class MahasiswaController extends Controller
     {
         $kelompoks = Kelompok::orderBy('nama')->get();
         $alergis = Alergi::orderBy('nama')->get();
-        
+
         return view('admin.mahasiswa.create', compact('kelompoks', 'alergis'));
     }
 
@@ -64,13 +63,13 @@ class MahasiswaController extends Controller
             'no_urut' => 'required|integer',
             'is_vegan' => 'boolean',
             'alergis' => 'nullable|array',
-            'alergis.*' => 'exists:alergis,id', 
+            'alergis.*' => 'exists:alergis,id',
         ]);
 
         if ($validator->fails()) {
             return redirect()->route('admin.mahasiswa.create')
-                        ->withErrors($validator)
-                        ->withInput();
+                ->withErrors($validator)
+                ->withInput();
         }
 
         $dataMahasiswa = $request->except('alergis');
@@ -82,7 +81,7 @@ class MahasiswaController extends Controller
         $mahasiswa->alergi()->sync($request->input('alergis', []));
 
         return redirect()->route('admin.mahasiswa.index')
-                         ->with('success', 'Data mahasiswa berhasil ditambahkan.');
+            ->with('success', 'Data mahasiswa berhasil ditambahkan.');
     }
 
     /**
@@ -104,9 +103,9 @@ class MahasiswaController extends Controller
         $mahasiswaAlergiIds = $mahasiswa->alergi->pluck('id')->toArray();
 
         return view('admin.mahasiswa.edit', compact(
-            'mahasiswa', 
-            'kelompoks', 
-            'alergis', 
+            'mahasiswa',
+            'kelompoks',
+            'alergis',
             'mahasiswaAlergiIds'
         ));
     }
@@ -129,12 +128,12 @@ class MahasiswaController extends Controller
 
         $dataMahasiswa = $request->except('alergis');
         $dataMahasiswa['is_vegan'] = $request->has('is_vegan');
-        
+
         $mahasiswa->update($dataMahasiswa);
         $mahasiswa->alergi()->sync($request->input('alergis', []));
 
         return redirect()->route('admin.mahasiswa.index')
-                         ->with('success', 'Data mahasiswa berhasil diperbarui.');
+            ->with('success', 'Data mahasiswa berhasil diperbarui.');
     }
 
     /**
@@ -144,10 +143,10 @@ class MahasiswaController extends Controller
     {
         // Hapus relasi detail distribusi dulu jika ada (manual cascade)
         DB::table('distribusi_details')->where('mahasiswa_id', $mahasiswa->id)->delete();
-        
+
         $mahasiswa->delete();
         return redirect()->route('admin.mahasiswa.index')
-                         ->with('success', 'Data mahasiswa berhasil dihapus.');
+            ->with('success', 'Data mahasiswa berhasil dihapus.');
     }
 
     /**
@@ -160,11 +159,11 @@ class MahasiswaController extends Controller
 
         if ($idsToDelete->isEmpty()) {
             return redirect()->route('admin.mahasiswa.index')
-                             ->with('error', 'Tidak ada data mahasiswa biasa untuk dihapus.');
+                ->with('error', 'Tidak ada data mahasiswa biasa untuk dihapus.');
         }
 
         // 2. Hapus Data Relasi Terlebih Dahulu (Manual Cascade) untuk menghindari error Foreign Key
-        
+
         // A. Hapus data di Pivot Alergi
         DB::table('mahasiswa_alergi')
             ->whereIn('mahasiswa_id', $idsToDelete)
@@ -180,9 +179,9 @@ class MahasiswaController extends Controller
         $deletedCount = Mahasiswa::whereIn('id', $idsToDelete)->delete();
 
         return redirect()->route('admin.mahasiswa.index')
-                         ->with('success', "Berhasil mereset {$deletedCount} data mahasiswa. Data Panitia Inti aman.");
+            ->with('success', "Berhasil mereset {$deletedCount} data mahasiswa. Data Panitia Inti aman.");
     }
-    
+
     /**
      * Menampilkan form import
      */
@@ -202,10 +201,9 @@ class MahasiswaController extends Controller
 
         try {
             Excel::import(new MahasiswaImport, $request->file('file'));
-            
-            return redirect()->route('admin.mahasiswa.index')
-                             ->with('success', 'Data mahasiswa berhasil diimpor.');
 
+            return redirect()->route('admin.mahasiswa.index')
+                ->with('success', 'Data mahasiswa berhasil diimpor.');
         } catch (ValidationException $e) {
             $failures = $e->failures();
             $errors = [];
@@ -213,11 +211,11 @@ class MahasiswaController extends Controller
                 $errors[] = "Baris " . $failure->row() . ": " . implode(", ", $failure->errors()) . " (Nilai: '" . $failure->values()[$failure->attribute()] . "')";
             }
             return redirect()->route('admin.mahasiswa.import.form')
-                             ->with('error', 'Gagal mengimpor data. Perbaiki error berikut:')
-                             ->with('validation_errors', $errors);
+                ->with('error', 'Gagal mengimpor data. Perbaiki error berikut:')
+                ->with('validation_errors', $errors);
         } catch (\Exception $e) {
             return redirect()->route('admin.mahasiswa.import.form')
-                             ->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+                ->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }
     }
 }

@@ -77,7 +77,7 @@
                         <div class="col-md-4">
                             <div class="form-check">
                                 <input class="form-check-input" type="checkbox" name="alergis[]"
-                                    value="{{ $alergi->id }}" id="alergi-{{ $alergi->id }}" {{-- Cek 'old' (jika validasi gagal) ATAU data asli dari controller --}}
+                                    value="{{ $alergi->id }}" id="alergi-{{ $alergi->id }}" 
                                     {{ in_array($alergi->id, old('alergis', $mahasiswaAlergiIds)) ? ' checked' : '' }}>
                                 <label class="form-check-label" for="alergi-{{ $alergi->id }}">
                                     {{ $alergi->nama }}
