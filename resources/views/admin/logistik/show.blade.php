@@ -21,4 +21,6 @@
             <a href="{{ route('admin.logistik.edit', $logistik) }}" class="btn btn-warning mt-3">Edit Item Ini</a>
         </div>
     </div>
+
+
 </x-app-layout>

@@ -6,6 +6,9 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Mahasiswa;
+use App\Models\Distribusi; // <-- Tambahkan
+use App\Models\DistribusiBukti; // <-- Tambahkan
+use Illuminate\Support\Facades\Storage; // <-- Tambahkan
 
 class MentorDashboardController extends Controller
 {
@@ -13,6 +16,11 @@ class MentorDashboardController extends Controller
     public function index(Request $request)
     {
         $user = Auth::user();
+        
+        // --- TAMBAHKAN LOGIKA INI ---
+        // Ambil data mentor dan kelompoknya untuk ditampilkan di dashboard
+        $mentorData = Mahasiswa::where('user_id', $user->id)->with('kelompok')->first();
+        // -------------------------
 
         $query = $request->input('query');
 
@@ -33,31 +41,87 @@ class MentorDashboardController extends Controller
             ->paginate(15)
             ->appends($request->except('page'));
 
-        // Kirim data ke view tanpa $mentorData
-        return view('mentor.dashboard', compact('user', 'results', 'query'));
+        // --- UBAH COMPACT() UNTUK MENAMBAHKAN $mentorData ---
+        return view('mentor.dashboard', compact('user', 'results', 'query', 'mentorData'));
     }
 
-    // Menampilkan data anggota kelompok mentor
+    // Menampilkan data anggota kelompok mentor (Halaman Info)
     public function showKelompok()
     {
-        // 1. Dapatkan data mentor (dari tabel mahasiswa)
-        $mentorData = Mahasiswa::where('user_id', Auth::id())->firstOrFail();
+        $user = Auth::user();
+        $mentorData = Mahasiswa::where('user_id', $user->id)->first();
 
-        // 2. Dapatkan nama kelompoknya
-        $kelompok = $mentorData->kelompok;
-        if (!$kelompok) {
+        if (!$mentorData || !$mentorData->kelompok_id) {
             return redirect()->route('mentor.dashboard')->with('error', 'Anda tidak terdaftar di kelompok manapun.');
         }
 
-        // 3. Cari semua mahasiswa (termasuk mentor itu sendiri)
-        //    yang ada di kelompok yang sama
-        $anggotas = Mahasiswa::where('kelompok_id', $kelompok->id)
-            ->with('alergi') // Eager load alergi
-            ->orderBy('nama', 'asc')
-            ->get();
+        $kelompok = $mentorData->kelompok()->with('mahasiswas')->first();
 
-        return view('mentor.kelompok', compact('anggotas', 'kelompok'));
+        return view('mentor.kelompok.show', compact('user', 'mentorData', 'kelompok'));
     }
 
-    // Method search() sudah tidak diperlukan lagi karena digabung ke index()
+    // --- TAMBAHKAN METHOD BARU INI ---
+    /**
+     * Menampilkan halaman untuk mengelola bukti distribusi.
+     */
+    public function manageKelompok()
+    {
+        $user = Auth::user();
+        $mentorData = Mahasiswa::where('user_id', $user->id)->first();
+
+        if (!$mentorData || !$mentorData->kelompok_id) {
+            return redirect()->route('mentor.dashboard')->with('error', 'Anda tidak terdaftar di kelompok manapun.');
+        }
+
+        // Ambil data kelompok beserta anggota dan riwayat distribusi + buktinya
+        $kelompok = $mentorData->kelompok()
+            ->with([
+                'mahasiswas',
+                'distribusi' => function ($query) {
+                    $query->with('buktis')->orderBy('created_at', 'desc');
+                }
+            ])
+            ->first();
+
+        // Arahkan ke view baru: manage.blade.php
+        return view('mentor.kelompok.manage', compact('user', 'mentorData', 'kelompok'));
+    }
+
+    /**
+     * Menyimpan gambar bukti distribusi.
+     */
+    public function storeBukti(Request $request)
+    {
+        $request->validate([
+            'distribusi_id' => 'required|exists:distribusis,id',
+            'bukti_gambar' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048', // Max 2MB
+            'catatan' => 'nullable|string|max:255',
+        ]);
+
+        // Simpan file gambar
+        $path = $request->file('bukti_gambar')->store('public/bukti_distribusi');
+
+        // Buat record di database
+        DistribusiBukti::create([
+            'distribusi_id' => $request->distribusi_id,
+            'image_path' => $path,
+            'catatan' => $request->catatan,
+        ]);
+
+        return back()->with('success', 'Bukti berhasil di-upload.');
+    }
+
+    /**
+     * Menghapus gambar bukti distribusi.
+     */
+    public function destroyBukti(DistribusiBukti $bukti)
+    {
+        // Hapus file dari storage
+        Storage::delete($bukti->image_path);
+
+        // Hapus record dari database
+        $bukti->delete();
+
+        return back()->with('success', 'Bukti berhasil dihapus.');
+    }
 }

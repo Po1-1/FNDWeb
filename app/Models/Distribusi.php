@@ -40,4 +40,10 @@ class Distribusi extends Model
     {
         return $this->hasMany(DistribusiDetail::class);
     }
+
+    // TAMBAHKAN RELASI INI
+    public function buktis()
+    {
+        return $this->hasMany(DistribusiBukti::class);
+    }
 }

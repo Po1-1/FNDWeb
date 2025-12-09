@@ -130,7 +130,13 @@ Route::middleware(['auth', EnsureUserHasRole::class . ':mentor'])
 
         Route::get('/dashboard', [MentorDashboardController::class, 'index'])->name('dashboard');
         Route::get('/kelompok', [MentorDashboardController::class, 'showKelompok'])->name('kelompok.show');
-
-        // TAMBAHKAN RUTE PENCARIAN DI SINI
+        
+        // --- TAMBAHKAN RUTE BARU INI ---
+        Route::get('/kelompok/manage', [MentorDashboardController::class, 'manageKelompok'])->name('kelompok.manage');
+        
         Route::get('/search', [MentorDashboardController::class, 'search'])->name('search');
+
+        // Rute untuk menyimpan dan menghapus bukti (biarkan seperti ini)
+        Route::post('/kelompok/bukti', [MentorDashboardController::class, 'storeBukti'])->name('kelompok.bukti.store');
+        Route::delete('/kelompok/bukti/{bukti}', [MentorDashboardController::class, 'destroyBukti'])->name('kelompok.bukti.destroy');
     });

@@ -1,13 +1,43 @@
 <x-app-layout>
     <div class="row align-items-center mb-4">
         <div class="col-md-8">
-            <h1 class="h3 fw-bold text-dark mb-1">Pencarian Mahasiswa</h1>
-            <p class="text-muted mb-0">Selamat datang, {{ $user->name }}! Gunakan form di bawah untuk mencari data
-                peserta.</p>
+            <h1 class="h3 fw-bold text-dark mb-1">Dashboard Mentor</h1>
+            <p class="text-muted mb-0">Selamat datang, {{ $user->name }}!</p>
         </div>
     </div>
 
-    <!-- search -->
+    {{-- BAGIAN BARU: KELOMPOK SAYA --}}
+    <div class="card shadow-sm border-primary mb-5">
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+            <h5 class="mb-0"><i class="bi bi-people-fill me-2"></i>Kelompok Binaan Saya</h5>
+        </div>
+        <div class="card-body p-4">
+            @if ($mentorData && $mentorData->kelompok)
+                <div class="d-flex flex-column flex-md-row justify-content-between align-items-center">
+                    <div class="mb-3 mb-md-0">
+                        <h4 class="fw-bold text-dark">{{ $mentorData->kelompok->nama }}</h4>
+                        <p class="text-muted mb-0">Gunakan tombol di samping untuk melihat anggota atau mengelola bukti distribusi.</p>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <a href="{{ route('mentor.kelompok.show') }}" class="btn btn-outline-secondary">
+                            <i class="bi bi-person-lines-fill me-1"></i> Lihat Anggota
+                        </a>
+                        <a href="{{ route('mentor.kelompok.manage') }}" class="btn btn-primary">
+                            <i class="bi bi-camera-fill me-1"></i> Kelola Bukti
+                        </a>
+                    </div>
+                </div>
+            @else
+                <div class="alert alert-warning mb-0">
+                    Akun Anda belum terhubung dengan kelompok manapun. Silakan hubungi Admin.
+                </div>
+            @endif
+        </div>
+    </div>
+
+
+    {{-- BAGIAN LAMA: PENCARIAN MAHASISWA --}}
+    <h4 class="fw-bold text-dark mb-3">Pencarian Global</h4>
     <div class="card border-0 shadow-sm rounded-4 mb-4 bg-white">
         <div class="card-body p-4">
             <form action="{{ route('mentor.dashboard') }}" method="GET">
@@ -22,7 +52,7 @@
         </div>
     </div>
 
-    <!-- hasil search -->
+    <!-- HASIL PENCARIAN (SEKARANG MENJADI DAFTAR UTAMA) -->
     <div class="card shadow-sm border-0 rounded-4 overflow-hidden">
         <div class="card-body p-0">
             @if ($results->isEmpty())
