@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Makanan;
 use App\Models\Vendor;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class MakananController extends Controller
 {
@@ -35,11 +36,19 @@ class MakananController extends Controller
             'deskripsi' => 'nullable|string',
             'bahan' => 'nullable|string',
             'is_vegan' => 'boolean',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
         ]);
 
-        $data = $request->except('is_vegan');
+        $data = $request->except(['is_vegan', 'image']);
         $data['is_vegan'] = $request->has('is_vegan');
         $data['event_id'] = $activeEventId;
+
+        if ($request->hasFile('image')) {
+            // Simpan file dan dapatkan path-nya
+            $path = $request->file('image')->store('public/makanan_images');
+            // Simpan path tersebut ke database
+            $data['image_path'] = $path;
+        }
 
         Makanan::create($data);
 
@@ -67,10 +76,19 @@ class MakananController extends Controller
             'deskripsi' => 'nullable|string',
             'bahan' => 'nullable|string',
             'is_vegan' => 'boolean',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048', // Tambahkan webp untuk fleksibilitas
         ]);
 
-        $data = $request->except('is_vegan');
+        $data = $request->except(['is_vegan', 'image']);
         $data['is_vegan'] = $request->has('is_vegan');
+
+        if ($request->hasFile('image')) {
+            if ($makanan->image_path) {
+                Storage::delete($makanan->image_path);
+            }
+            $path = $request->file('image')->store('public/makanan_images');
+            $data['image_path'] = $path;
+        }
 
         $makanan->update($data);
 
@@ -81,6 +99,9 @@ class MakananController extends Controller
     {
         if ($makanan->event_id != session('active_event_id')) {
             abort(404);
+        }
+        if ($makanan->image_path) {
+            Storage::delete($makanan->image_path);
         }
         $makanan->delete();
         return redirect()->route('admin.makanan.index')->with('success', 'Menu makanan berhasil dihapus.');

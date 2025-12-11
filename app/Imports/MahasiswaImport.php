@@ -10,90 +10,89 @@ use Illuminate\Support\Str;
 use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Maatwebsite\Excel\Concerns\WithValidation;
-use Illuminate\Support\Facades\Auth; // Tambahkan ini
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Maatwebsite\Excel\Concerns\WithChunkReading;
 
-class MahasiswaImport implements ToModel, WithHeadingRow, WithValidation
+class MahasiswaImport implements ToModel, WithHeadingRow, WithValidation, ShouldQueue, WithChunkReading
 {
     private $activeEventId;
+    private $tenantId; // Simpan tenantId
 
     public function __construct()
     {
-        // Ambil event_id yang aktif saat objek import dibuat
         $this->activeEventId = session('active_event_id');
+        $this->tenantId = Auth::user()->tenant_id; // Ambil tenantId saat job dibuat
     }
 
-    /**
-    * @param array $row
-    *
-    * @return \Illuminate\Database\Eloquent\Model|null
-    */
     public function model(array $row)
     {
-        // 1. LOGIKA KELOMPOK (Dengan set_vendor opsional)
-        
-        // Cek jika 'set_vendor' ada di Excel & tidak kosong. 
-        // Jika tidak, beri nilai default.
-
-        // Cari Kelompok berdasarkan nama. 
-        // Jika tidak ada, buat baru dengan set_vendor (yang mungkin default).
+        // 1. LOGIKA KELOMPOK (Sederhana)
+        // Cari Kelompok berdasarkan nama. Jika tidak ada, buat baru.
         $kelompok = Kelompok::firstOrCreate(
             [
-                'nama' => $row['kelompok'] // Kunci pencarian
+                'event_id' => $this->activeEventId,
+                'nama' => $row['kelompok']
+            ],
+            [
+                'event_id' => $this->activeEventId,
+                'nama' => $row['kelompok']
             ]
         );
 
         // 2. LOGIKA MENTOR (Panitia = Mentor)
-        // (Pastikan file Excel Anda punya kolom 'prodi')
         $userId = null;
-        if (strtoupper($row['prodi']) === 'PANITIA') {
-            
+        if (isset($row['prodi']) && strtoupper($row['prodi']) === 'PANITIA') {
             $email = Str::slug($row['nama'], '.') . '@mentor.test';
-            
             $user = User::firstOrCreate(
                 ['email' => $email],
                 [
+                    'tenant_id' => $this->tenantId, // Gunakan tenantId yang disimpan
                     'name' => $row['nama'],
-                    'password' => Hash::make('password'), 
+                    'password' => Hash::make('password'),
                     'role' => 'mentor',
                     'email_verified_at' => now()
                 ]
             );
-            
             $userId = $user->id;
         }
-        
+
         // 3. LOGIKA IS_VEGAN
         $isVegan = false;
         if (isset($row['is_vegan'])) {
-            $isVegan = in_array(strtoupper($row['is_vegan']), ['1', 'TRUE', 'YA']);
+            $isVegan = in_array(strtoupper($row['is_vegan']), ['1', 'TRUE', 'YA', 'YES']);
         }
 
         // 4. BUAT MAHASISWA
-        return new Mahasiswa([
-            'event_id'    => $this->activeEventId, // <-- INI KUNCINYA
+        $mahasiswa = Mahasiswa::create([
+            'event_id'    => $this->activeEventId,
             'nim'         => $row['nim'],
             'nama'        => $row['nama'],
-            'prodi'       => $row['prodi'],
-            'kelompok_id' => $kelompok->id, 
-            'no_urut'     => $row['no_urut'],
+            'prodi'       => $row['prodi'] ?? null,
+            'kelompok_id' => $kelompok->id,
+            'no_urut'     => $row['no'], // Ambil dari kolom 'no'
             'is_vegan'    => $isVegan,
             'user_id'     => $userId,
         ]);
+
+        return $mahasiswa;
     }
 
-    /**
-     * Aturan validasi untuk setiap baris Excel.
-     */
     public function rules(): array
     {
         return [
-            'nim' => 'required|unique:mahasiswas,nim',
+            'nim' => 'required|unique:mahasiswas,nim,NULL,id,event_id,' . $this->activeEventId,
             'nama' => 'required|string|max:255',
-            'prodi' => 'required|string', // Kolom 'prodi' tetap wajib
-            
+            'prodi' => 'nullable|string',
             'kelompok' => 'required|string',
-            'no_urut' => 'required|integer',
+            'no' => 'required|integer', // Ubah 'no_urut' menjadi 'no'
             'is_vegan' => 'nullable',
         ];
+    }
+
+    // Method untuk memproses file dalam potongan (chunks)
+    public function chunkSize(): int
+    {
+        return 200; // Proses 200 baris per job, sesuaikan jika perlu
     }
 }

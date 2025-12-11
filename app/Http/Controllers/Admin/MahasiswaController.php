@@ -220,22 +220,14 @@ class MahasiswaController extends Controller
         ]);
 
         try {
-            Excel::import(new MahasiswaImport, $request->file('file'));
+            // Ganti dari import() menjadi queueImport()
+            Excel::queueImport(new MahasiswaImport, $request->file('file'));
 
             return redirect()->route('admin.mahasiswa.index')
-                ->with('success', 'Data mahasiswa berhasil diimpor.');
-        } catch (ValidationException $e) {
-            $failures = $e->failures();
-            $errors = [];
-            foreach ($failures as $failure) {
-                $errors[] = "Baris " . $failure->row() . ": " . implode(", ", $failure->errors()) . " (Nilai: '" . $failure->values()[$failure->attribute()] . "')";
-            }
-            return redirect()->route('admin.mahasiswa.import.form')
-                ->with('error', 'Gagal mengimpor data. Perbaiki error berikut:')
-                ->with('validation_errors', $errors);
+                ->with('success', 'Data mahasiswa sedang diimpor di background. Proses mungkin memakan waktu beberapa menit.');
         } catch (\Exception $e) {
             return redirect()->route('admin.mahasiswa.import.form')
-                ->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+                ->with('error', 'Terjadi kesalahan saat memulai proses import: ' . $e->getMessage());
         }
     }
 }

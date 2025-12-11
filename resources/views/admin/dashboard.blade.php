@@ -7,7 +7,8 @@
         <div class="col-md-4 text-md-end">
             <div class="d-inline-block bg-white px-4 py-2 rounded-pill shadow-sm border">
                 <i class="bi bi-calendar-check text-primary me-2"></i>
-                <span class="fw-bold text-dark">{{ now()->translatedFormat('l, d F Y') }}</span>
+                {{-- Gunakan tanggal mulai event jika ada, jika tidak, gunakan tanggal hari ini --}}
+                <span class="fw-bold text-dark">{{ $activeEvent ? $activeEvent->tanggal_mulai->translatedFormat('l, d F Y') : now()->translatedFormat('l, d F Y') }}</span>
             </div>
         </div>
     </div>

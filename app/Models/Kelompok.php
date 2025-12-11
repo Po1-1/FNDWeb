@@ -10,9 +10,9 @@ class Kelompok extends Model
     use HasFactory;
 
     protected $fillable = [
-        'event_id', // Tambahkan ini
+        'event_id',
         'nama',
-        'vendor_id', // Vendor default untuk kelompok ini
+        // 'vendor_id' sudah tidak ada lagi
     ];
 
     public function event()
@@ -23,11 +23,6 @@ class Kelompok extends Model
     public function mahasiswas()
     {
         return $this->hasMany(Mahasiswa::class);
-    }
-
-    public function vendor()
-    {
-        return $this->belongsTo(Vendor::class);
     }
 
     public function distribusi()
@@ -45,7 +40,7 @@ class Kelompok extends Model
     public function getVendorOn($hari, $waktu)
     {
         $jadwal = $this->jadwal()->where('hari_ke', $hari)->where('waktu_makan', $waktu)->first();
-        // Jika ada jadwal spesifik, pakai itu. Jika tidak, pakai default vendor kelompok.
-        return $jadwal ? $jadwal->vendor : $this->vendor; 
+        // Jika ada jadwal spesifik, pakai vendor dari jadwal itu.
+        return $jadwal ? $jadwal->vendor : null; 
     }
 }

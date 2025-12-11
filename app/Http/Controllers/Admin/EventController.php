@@ -84,16 +84,26 @@ class EventController extends Controller
     }
 
     /**
-     * Set event yang dipilih sebagai event aktif di session.
+     * Set event yang dipilih sebagai event aktif di session DAN di database.
      */
     public function setActive(Event $event)
     {
-        if ($event->tenant_id !== Auth::user()->tenant_id && Auth::user()->role !== 'developer') {
+        // 1. Pastikan event ini milik tenant yang sama
+        if ($event->tenant_id !== Auth::user()->tenant_id) {
             abort(403, 'Anda tidak memiliki akses ke event ini.');
         }
 
+        // 2. Nonaktifkan semua event lain di tenant ini
+        Event::where('tenant_id', Auth::user()->tenant_id)
+            ->where('id', '!=', $event->id)
+            ->update(['is_active' => false]);
+
+        // 3. Aktifkan event yang dipilih
+        $event->update(['is_active' => true]);
+
+        // 4. Set session untuk admin (opsional, tapi baik untuk konsistensi)
         session(['active_event_id' => $event->id]);
 
-        return redirect()->route('admin.dashboard')->with('success', "Event '{$event->nama_event}' sekarang aktif.");
+        return redirect()->route('admin.events.index')->with('success', "Event '{$event->nama_event}' sekarang aktif untuk semua user.");
     }
 }

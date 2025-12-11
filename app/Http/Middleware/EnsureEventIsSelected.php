@@ -15,23 +15,20 @@ class EnsureEventIsSelected
      */
     public function handle(Request $request, Closure $next): Response
     {
-        // Rute yang dikecualikan dari pengecekan ini
-        $excludedRoutes = [
-            'admin.events.index',
-            'admin.events.create',
-            'admin.events.store',
-            'admin.events.edit',
-            'admin.events.update',
-            'admin.events.destroy',
-            'admin.events.setActive', // Rute ini akan kita buat nanti
-        ];
+        // Jika tidak ada event yang dipilih di session...
+        if (!session()->has('active_event_id')) {
+            
+            // ...DAN kita TIDAK sedang mencoba mengakses halaman manajemen event...
+            // Pengecekan URL lebih andal daripada pengecekan nama rute di sini.
+            if (!$request->is('admin/events*')) {
 
-        // Jika tidak ada event yang dipilih di session DAN rute saat ini bukan bagian dari event management
-        if (!session()->has('active_event_id') && !in_array($request->route()->getName(), $excludedRoutes)) {
-            return redirect()->route('admin.events.index')
-                ->with('warning', 'Silakan buat atau pilih sebuah event terlebih dahulu untuk melanjutkan.');
+                // ...maka paksa redirect ke halaman pemilihan event dengan pesan error.
+                return redirect()->route('admin.events.index')
+                    ->with('error', 'Silakan pilih atau buat event yang aktif terlebih dahulu.');
+            }
         }
 
+        // Jika ada event yang dipilih, ATAU jika kita sedang di halaman event, lanjutkan request.
         return $next($request);
     }
 }

@@ -10,23 +10,36 @@
         </button>
         <div class="collapse navbar-collapse" id="appNavbar">
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                @if(Auth::user()->role === 'admin')
-                    <li class="nav-item"><a class="nav-link" href="{{ route('admin.dashboard') }}">Dashboard</a></li>
-                    <li class="nav-item"><a class="nav-link" href="{{ route('admin.events.index') }}">Events</a></li>
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">Data Master</a>
-                        <ul class="dropdown-menu border-0 shadow-lg rounded-4 mt-2 p-2">
-                            <li><a class="dropdown-item rounded-3 px-3 py-2" href="{{ route('admin.mahasiswa.index') }}">Mahasiswa</a></li>
-                            <li><a class="dropdown-item rounded-3 px-3 py-2" href="{{ route('admin.kelompok.index') }}">Kelompok</a></li>
-                            <li><a class="dropdown-item rounded-3 px-3 py-2" href="{{ route('admin.vendors.index') }}">Vendor</a></li>
-                            <li><a class="dropdown-item rounded-3 px-3 py-2" href="{{ route('admin.makanan.index') }}">Makanan</a></li>
-                             <li><a class="dropdown-item rounded-3 px-3 py-2" href="{{ route('admin.alergi.index') }}">Alergi</a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item rounded-3 px-3 py-2 text-muted" href="{{ route('admin.users.index') }}">Users</a></li>
-                        </ul>
+                @if (Auth::user()->role == 'admin')
+                    {{-- Tampilkan menu ini HANYA JIKA event sudah dipilih --}}
+                    @if (session('active_event_id'))
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ route('admin.dashboard') }}">Dashboard</a>
+                        </li>
+                    @endif
+
+                    {{-- Menu Event selalu tampil untuk Admin --}}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ route('admin.events.index') }}">Events</a>
                     </li>
-                    <li class="nav-item"><a class="nav-link" href="{{ route('admin.logistik.index') }}">Logistik</a></li>
-                    <li class="nav-item"><a class="nav-link" href="{{ route('admin.summaries.index') }}">Laporan</a></li>
+
+                    {{-- Tampilkan semua menu data master HANYA JIKA event sudah dipilih --}}
+                    @if (session('active_event_id'))
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">Data Master</a>
+                            <ul class="dropdown-menu border-0 shadow-lg rounded-4 mt-2 p-2">
+                                <li><a class="dropdown-item rounded-3 px-3 py-2" href="{{ route('admin.mahasiswa.index') }}">Mahasiswa</a></li>
+                                <li><a class="dropdown-item rounded-3 px-3 py-2" href="{{ route('admin.kelompok.index') }}">Kelompok</a></li>
+                                <li><a class="dropdown-item rounded-3 px-3 py-2" href="{{ route('admin.vendors.index') }}">Vendor</a></li>
+                                <li><a class="dropdown-item rounded-3 px-3 py-2" href="{{ route('admin.makanan.index') }}">Makanan</a></li>
+                                <li><a class="dropdown-item rounded-3 px-3 py-2" href="{{ route('admin.alergi.index') }}">Alergi</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item rounded-3 px-3 py-2 text-muted" href="{{ route('admin.users.index') }}">Users</a></li>
+                            </ul>
+                        </li>
+                        <li class="nav-item"><a class="nav-link" href="{{ route('admin.logistik.index') }}">Logistik</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{{ route('admin.summaries.index') }}">Laporan</a></li>
+                    @endif
                 @endif
             </ul>
 

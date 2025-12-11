@@ -1,9 +1,11 @@
 <x-app-layout>
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1>Manajemen Kelompok & Vendor</h1>
-        <a href="{{ route('admin.kelompok.create') }}" class="btn btn-primary">
-            + Buat Kelompok Baru
-        </a>
+        <div>
+            <a href="{{ route('admin.kelompok.create') }}" class="btn btn-primary">
+                + Buat Kelompok Baru
+            </a>
+        </div>
     </div>
 
     <div class="card shadow-sm">

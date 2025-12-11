@@ -16,6 +16,7 @@ class Makanan extends Model
         'deskripsi',
         'bahan',
         'is_vegan',
+        'image_path', // <-- Tambahkan ini
     ];
 
     public function event()

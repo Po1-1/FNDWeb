@@ -9,9 +9,10 @@
     <div class="card shadow-sm">
         <div class="card-body">
             <div class="table-responsive">
-                <table class="table table-hover">
+                <table class="table table-hover align-middle">
                     <thead class="table-dark">
                         <tr>
+                            <th style="width: 80px;">Gambar</th>
                             <th>Nama Menu</th>
                             <th>Vendor</th>
                             <th>Bahan</th>
@@ -22,6 +23,15 @@
                     <tbody>
                         @forelse ($makanans as $makanan)
                             <tr>
+                                <td>
+                                    @if($makanan->image_path)
+                                        <img src="{{ Storage::url($makanan->image_path) }}" alt="{{ $makanan->nama_menu }}" class="img-thumbnail" width="70">
+                                    @else
+                                        <div class="img-thumbnail bg-light text-center d-flex align-items-center justify-content-center" style="width: 70px; height: 50px;">
+                                            <i class="bi bi-image text-muted"></i>
+                                        </div>
+                                    @endif
+                                </td>
                                 <td>{{ $makanan->nama_menu }}</td>
                                 <td>{{ $makanan->vendor->nama_vendor ?? 'N/A' }}</td>
                                 <td>{{ Str::limit($makanan->bahan, 50) }}</td>
@@ -37,7 +47,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="5" class="text-center">Tidak ada data makanan.</td>
+                                <td colspan="6" class="text-center">Tidak ada data makanan.</td>
                             </tr>
                         @endforelse
                     </tbody>

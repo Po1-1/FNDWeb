@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\InventarisLogistik;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule; // <-- Tambahkan ini
 
 class InventarisLogistikController extends Controller
 {
@@ -27,7 +28,14 @@ class InventarisLogistikController extends Controller
     {
         $activeEventId = session('active_event_id');
         $request->validate([
-            'nama_item' => 'required|string|max:255',
+            'nama_item' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('inventaris_logistiks')->where(function ($query) use ($activeEventId) {
+                    return $query->where('event_id', $activeEventId);
+                }),
+            ],
             'stok_awal' => 'required|integer|min:0',
             'satuan' => 'required|string|max:50',
         ]);
@@ -68,8 +76,16 @@ class InventarisLogistikController extends Controller
         if ($logistik->event_id != session('active_event_id')) {
             abort(404);
         }
+        $activeEventId = session('active_event_id');
         $request->validate([
-            'nama_item' => 'required|string|max:255',
+            'nama_item' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('inventaris_logistiks')->where(function ($query) use ($activeEventId) {
+                    return $query->where('event_id', $activeEventId);
+                })->ignore($logistik->id),
+            ],
             'stok_awal' => 'required|integer|min:0',
             'satuan' => 'required|string|max:50',
         ]);

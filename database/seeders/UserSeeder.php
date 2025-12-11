@@ -26,6 +26,7 @@ class UserSeeder extends Seeder
 
         // 1. Admin
         User::create([
+            'tenant_id' => $defaultTenant->id, // <-- INI PERBAIKANNYA
             'name' => 'Admin User',
             'email' => 'admin@fnd.test',
             'password' => Hash::make('password'),

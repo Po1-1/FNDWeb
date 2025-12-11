@@ -73,46 +73,58 @@ Route::middleware(['auth', 'role:developer'])
 
 /*
 |--------------------------------------------------------------------------
-| Rute Khusus ADMIN
+| Rute Khusus ADMIN (Struktur Final yang Sudah Diperbaiki)
 |--------------------------------------------------------------------------
 */
-Route::middleware(['auth', 'role:admin', 'event.selected']) // <-- Tambahkan 'event.selected' di sini
+
+// SEMUA rute admin sekarang berada dalam SATU grup.
+// Middleware 'event.selected' akan menangani logika pengalihan.
+Route::middleware(['auth', 'role:admin', 'event.selected'])
     ->prefix('admin')
     ->name('admin.')
     ->group(function () {
+        
+        // Dashboard
         Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
 
-        // Rute untuk mengelola data master
+        // Manajemen Event (tetap di dalam grup yang sama)
+        Route::resource('events', EventController::class)->except(['show']);
+        Route::get('events/{event}/set-active', [EventController::class, 'setActive'])->name('events.setActive');
+
+        // Import & Reset Mahasiswa (PINDAHKAN KE SINI)
+        Route::get('/mahasiswa/import', [MahasiswaController::class, 'showImportForm'])->name('mahasiswa.import.form');
+        Route::post('/mahasiswa/import', [MahasiswaController::class, 'import'])->name('mahasiswa.import');
+        Route::delete('/mahasiswa/destroy-all', [MahasiswaController::class, 'destroyAll'])->name('mahasiswa.destroyAll');
+
+        // Data Master
         Route::resource('mahasiswa', MahasiswaController::class);
         Route::resource('kelompok', KelompokController::class);
-        Route::resource('vendor', VendorController::class);
-        Route::resource('makanan', MakananController::class);
-        Route::resource('alergi', AlergiController::class);
-        Route::resource('inventaris', InventarisLogistikController::class)->names('inventaris');
-        // Tambahkan rute master data lainnya di sini
-
-        // Rute untuk Import XLSX
-        Route::post('/mahasiswa/import', [MahasiswaController::class, 'import'])->name('mahasiswa.import');
-        Route::get('/mahasiswa/import', [MahasiswaController::class, 'showImportForm'])->name('mahasiswa.import.form');
-
-        // Rute CRUD (Resource)
-        Route::delete('/mahasiswa/destroy-all', [App\Http\Controllers\Admin\MahasiswaController::class, 'destroyAll'])->name('mahasiswa.destroyAll');
-        Route::resource('mahasiswa', MahasiswaController::class);
         Route::resource('vendors', VendorController::class);
         Route::resource('makanan', MakananController::class);
-        Route::resource('users', UserController::class);
-
-        // --- RUTE YANG DITAMBAHKAN ---
-        Route::resource('logistik', InventarisLogistikController::class); // Melengkapi yang tadi
         Route::resource('alergi', AlergiController::class);
-        Route::resource('events', EventController::class);
-        Route::get('events/{event}/set-active', [EventController::class, 'setActive'])->name('events.setActive'); // <-- TAMBAHKAN INI
+        Route::resource('users', UserController::class);
+        Route::resource('logistik', InventarisLogistikController::class)->names('logistik');
 
+        // Import & Reset Mahasiswa (HAPUS DARI SINI)
+
+        // Laporan / Summary
         Route::get('summaries/generate', [EventSummaryController::class, 'showGeneratorForm'])->name('summary.generate.form');
         Route::post('summaries/generate', [EventSummaryController::class, 'generateSnapshot'])->name('summary.generate.store');
-        Route::resource('summaries', EventSummaryController::class)->only(['index', 'show']); // Hanya index & show
-        // -----------------------------
-});
+        Route::resource('summaries', EventSummaryController::class)->only(['index', 'show']);
+    });
+
+/*
+|--------------------------------------------------------------------------
+| Rute Role Lain (Mentor, Kasir)
+|--------------------------------------------------------------------------
+*/
+Route::middleware(['auth', 'role:mentor'])
+    ->prefix('mentor')
+    ->name('mentor.')
+    ->group(function () {
+        Route::get('/dashboard', [MentorDashboardController::class, 'index'])->name('dashboard');
+        // Rute kelompok, manage, dan bukti dihapus karena fitur disederhanakan
+    });
 
 /*
 |--------------------------------------------------------------------------
@@ -140,27 +152,4 @@ Route::middleware(['auth', EnsureUserHasRole::class . ':kasir'])
         // 2. Untuk menyimpan data checklist (Langkah 3 - INI YANG ERROR)
         Route::post('/distribusi/store-checklist', [DistribusiController::class, 'storeChecklist'])
             ->name('distribusi.storeChecklist');
-    });
-
-/*
-|--------------------------------------------------------------------------
-| Rute Khusus MENTOR
-|--------------------------------------------------------------------------
-*/
-Route::middleware(['auth', EnsureUserHasRole::class . ':mentor'])
-    ->prefix('mentor')
-    ->name('mentor.')
-    ->group(function () {
-
-        Route::get('/dashboard', [MentorDashboardController::class, 'index'])->name('dashboard');
-        Route::get('/kelompok', [MentorDashboardController::class, 'showKelompok'])->name('kelompok.show');
-        
-        // --- TAMBAHKAN RUTE BARU INI ---
-        Route::get('/kelompok/manage', [MentorDashboardController::class, 'manageKelompok'])->name('kelompok.manage');
-        
-        Route::get('/search', [MentorDashboardController::class, 'search'])->name('search');
-
-        // Rute untuk menyimpan dan menghapus bukti (biarkan seperti ini)
-        Route::post('/kelompok/bukti', [MentorDashboardController::class, 'storeBukti'])->name('kelompok.bukti.store');
-        Route::delete('/kelompok/bukti/{bukti}', [MentorDashboardController::class, 'destroyBukti'])->name('kelompok.bukti.destroy');
     });

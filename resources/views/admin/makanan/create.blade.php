@@ -3,7 +3,7 @@
     
     <div class="card shadow-sm">
         <div class="card-body">
-            <form action="{{ route('admin.makanan.store') }}" method="POST">
+            <form action="{{ route('admin.makanan.store') }}" method="POST" enctype="multipart/form-data">
                 @csrf
                 <div class="mb-3">
                     <label for="vendor_id" class="form-label">Vendor</label>
@@ -43,6 +43,12 @@
                             Menu Vegan?
                         </label>
                     </div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="image" class="form-label">Gambar Makanan (Opsional)</label>
+                    <input class="form-control @error('image') is-invalid @enderror" type="file" id="image" name="image">
+                    @error('image') <div class="invalid-feedback">{{ $message }}</div> @enderror
                 </div>
 
                 <div class="mt-4">

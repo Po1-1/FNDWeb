@@ -3,7 +3,7 @@
     
     <div class="card shadow-sm">
         <div class="card-body">
-            <form action="{{ route('admin.makanan.update', $makanan) }}" method="POST">
+            <form action="{{ route('admin.makanan.update', $makanan) }}" method="POST" enctype="multipart/form-data">
                 @csrf
                 @method('PUT')
                 
@@ -45,6 +45,18 @@
                             Menu Vegan?
                         </label>
                     </div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="image" class="form-label">Upload Gambar Baru (Opsional)</label>
+                    <input class="form-control @error('image') is-invalid @enderror" type="file" id="image" name="image">
+                    @error('image') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                    @if ($makanan->image_path)
+                        <div class="mt-2">
+                            <small class="text-muted">Gambar saat ini:</small><br>
+                            <img src="{{ Storage::url($makanan->image_path) }}" alt="{{ $makanan->nama_menu }}" class="img-thumbnail mt-1" width="150">
+                        </div>
+                    @endif
                 </div>
 
                 <div class="mt-4">

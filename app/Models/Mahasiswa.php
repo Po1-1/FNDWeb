@@ -10,7 +10,7 @@ class Mahasiswa extends Model
     use HasFactory;
 
     protected $fillable = [
-        'event_id', // Tambahkan ini
+        'event_id',
         'nim',
         'nama',
         'prodi',
@@ -50,12 +50,17 @@ class Mahasiswa extends Model
     // Logika Penentuan Vendor (Penting!)
     public function getVendorFor($hari, $waktu)
     {
-        // 1. Cek apakah anak ini punya vendor khusus? (Override)
+        // Prioritas 1: Cek apakah mahasiswa ini punya override vendor khusus.
         if ($this->custom_vendor_id) {
             return $this->customVendor;
         }
 
-        // 2. Jika tidak, ambil vendor kelompok pada waktu tersebut
-        return $this->kelompok->getVendorOn($hari, $waktu);
+        // Prioritas 2 (Fallback): Gunakan jadwal default dari kelompoknya.
+        if ($this->kelompok) {
+            return $this->kelompok->getVendorOn($hari, $waktu);
+        }
+
+        // Jika mahasiswa bahkan tidak punya kelompok, kembalikan null.
+        return null;
     }
 }

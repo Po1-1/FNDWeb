@@ -3,13 +3,12 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\EventSummary;
 use App\Models\Event;
+use App\Models\EventSummary;
 use App\Models\LogPenggunaanLogistik;
-use App\Models\InventarisLogistik;
-use App\Models\Kelompok;
 use App\Models\Distribusi;
 use App\Models\DistribusiDetail;
+use App\Models\InventarisLogistik;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -72,18 +71,24 @@ class EventSummaryController extends Controller
         $event = Event::find($request->event_id);
         $tanggal = Carbon::parse($request->tanggal_summary);
 
-        // 1. KALKULASI LOGISTIK
-        $logistikUsage = LogPenggunaanLogistik::with('inventarisLogistik:id,nama_item,satuan')
-            ->whereDate('tanggal_penggunaan', $tanggal)
+        // 1. KALKULASI LOGISTIK (DENGAN SISA STOK)
+        $logistikAwal = InventarisLogistik::where('event_id', $event->id)->get()->keyBy('id');
+        $logistikUsage = LogPenggunaanLogistik::where('event_id', $event->id)
+            ->whereDate('tanggal_penggunaan', '<=', $tanggal) // Akumulasi dari awal event
             ->select('inventaris_logistik_id', DB::raw('SUM(jumlah_digunakan) as total_digunakan'))
             ->groupBy('inventaris_logistik_id')
-            ->get();
+            ->get()
+            ->keyBy('inventaris_logistik_id');
 
-        $rekapLogistikSnapshot = $logistikUsage->map(function ($log) {
+        $rekapLogistikSnapshot = $logistikAwal->map(function ($item) use ($logistikUsage) {
+            $penggunaan = $logistikUsage->get($item->id);
+            $totalDigunakan = $penggunaan ? $penggunaan->total_digunakan : 0;
             return [
-                'nama_item' => $log->inventarisLogistik->nama_item ?? 'Item Dihapus',
-                'total_digunakan' => (int) $log->total_digunakan,
-                'satuan' => $log->inventarisLogistik->satuan ?? 'pcs'
+                'nama_item' => $item->nama_item,
+                'stok_awal' => (int) $item->stok_awal,
+                'total_digunakan' => (int) $totalDigunakan,
+                'sisa_stok' => (int) $item->stok_awal - $totalDigunakan,
+                'satuan' => $item->satuan
             ];
         })->values()->all();
 
