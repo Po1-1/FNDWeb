@@ -10,6 +10,7 @@ use App\Models\Alergi;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use App\Models\Kelompok;
+use App\Models\Tenant; // <-- Tambahkan ini
 
 class MahasiswaSeeder extends Seeder
 {
@@ -39,19 +40,27 @@ class MahasiswaSeeder extends Seeder
             return;
         }
 
+        // Pastikan tenant default ada
+        $defaultTenant = Tenant::where('name', 'FND Default')->first();
+        if (!$defaultTenant) {
+            $this->command->error('Tenant "FND Default" tidak ditemukan. Jalankan UserSeeder dulu.');
+            return;
+        }
+
         // 3. Buat 15 Mahasiswa Panitia (yang akan jadi Mentor)
         $this->command->info('Membuat data Mahasiswa Panitia (Mentor)...');
         
         Mahasiswa::factory(15)->create([
             'prodi' => 'Panitia',
             'kelompok_id' => $kelompokPanitia->id,
-        ])->each(function ($mahasiswa) {
+        ])->each(function ($mahasiswa) use ($defaultTenant) { // <-- Kirim tenant ke closure
             // --- INI LOGIKA PENTINGNYA ---
             // Jika Prodi = Panitia, buatkan akun User (Mentor)
             
             $email = Str::slug($mahasiswa->nama, '.') . '@mentor.test';
 
             $user = User::create([
+                'tenant_id' => $defaultTenant->id, // <-- INI KUNCINYA
                 'name' => $mahasiswa->nama,
                 'email' => $email,
                 'password' => Hash::make('password'),

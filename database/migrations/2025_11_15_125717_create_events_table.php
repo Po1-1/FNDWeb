@@ -16,6 +16,7 @@ return new class extends Migration
             $table->string('nama_event');
             $table->date('tanggal_mulai');
             $table->date('tanggal_selesai');
+            $table->integer('jumlah_hari')->storedAs('julianday(tanggal_selesai) - julianday(tanggal_mulai) + 1')->nullable(); // Untuk SQLite
             $table->boolean('is_active')->default(false);
             $table->timestamps();
         });

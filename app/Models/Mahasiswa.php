@@ -10,6 +10,7 @@ class Mahasiswa extends Model
     use HasFactory;
 
     protected $fillable = [
+        'event_id', // Tambahkan ini
         'nim',
         'nama',
         'prodi',
@@ -19,6 +20,11 @@ class Mahasiswa extends Model
         'user_id',
         'custom_vendor_id', // Baru
     ];
+
+    public function event()
+    {
+        return $this->belongsTo(Event::class);
+    }
 
     public function user()
     {

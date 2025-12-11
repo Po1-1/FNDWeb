@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 
 // Import Middleware Kustom
 use App\Http\Middleware\EnsureUserHasRole;
+use App\Http\Middleware\EnsureEventIsSelected; // <-- Tambahkan ini
 
 // Import Controller
 use App\Http\Controllers\ProfileController;
@@ -22,6 +23,7 @@ use App\Http\Controllers\Kasir\KasirDashboardController;
 use App\Http\Controllers\Kasir\DistribusiController;
 use App\Http\Controllers\Mentor\MentorDashboardController;
 use App\Http\Controllers\Admin\KelompokController;
+use App\Http\Controllers\Developer\TenantController; // <-- Tambahkan ini
 
 /*
 |--------------------------------------------------------------------------
@@ -58,16 +60,37 @@ Route::middleware('auth')->group(function () {
 
 /*
 |--------------------------------------------------------------------------
+| Rute Khusus DEVELOPER
+|--------------------------------------------------------------------------
+*/
+Route::middleware(['auth', 'role:developer'])
+    ->prefix('developer')
+    ->name('developer.')
+    ->group(function () {
+        Route::resource('tenants', TenantController::class)->only(['index', 'create', 'store']);
+});
+
+
+/*
+|--------------------------------------------------------------------------
 | Rute Khusus ADMIN
 |--------------------------------------------------------------------------
 */
-Route::middleware(['auth', EnsureUserHasRole::class . ':admin'])
+Route::middleware(['auth', 'role:admin', 'event.selected']) // <-- Tambahkan 'event.selected' di sini
     ->prefix('admin')
     ->name('admin.')
     ->group(function () {
-
         Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
+
+        // Rute untuk mengelola data master
+        Route::resource('mahasiswa', MahasiswaController::class);
         Route::resource('kelompok', KelompokController::class);
+        Route::resource('vendor', VendorController::class);
+        Route::resource('makanan', MakananController::class);
+        Route::resource('alergi', AlergiController::class);
+        Route::resource('inventaris', InventarisLogistikController::class)->names('inventaris');
+        // Tambahkan rute master data lainnya di sini
+
         // Rute untuk Import XLSX
         Route::post('/mahasiswa/import', [MahasiswaController::class, 'import'])->name('mahasiswa.import');
         Route::get('/mahasiswa/import', [MahasiswaController::class, 'showImportForm'])->name('mahasiswa.import.form');
@@ -83,12 +106,13 @@ Route::middleware(['auth', EnsureUserHasRole::class . ':admin'])
         Route::resource('logistik', InventarisLogistikController::class); // Melengkapi yang tadi
         Route::resource('alergi', AlergiController::class);
         Route::resource('events', EventController::class);
+        Route::get('events/{event}/set-active', [EventController::class, 'setActive'])->name('events.setActive'); // <-- TAMBAHKAN INI
 
         Route::get('summaries/generate', [EventSummaryController::class, 'showGeneratorForm'])->name('summary.generate.form');
         Route::post('summaries/generate', [EventSummaryController::class, 'generateSnapshot'])->name('summary.generate.store');
         Route::resource('summaries', EventSummaryController::class)->only(['index', 'show']); // Hanya index & show
         // -----------------------------
-    });
+});
 
 /*
 |--------------------------------------------------------------------------

@@ -2,16 +2,18 @@
 
 namespace App\Models;
 
+use App\Models\Traits\BelongsToTenant; // <-- 1. Import Trait
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Event extends Model
 {
-    use HasFactory;
+    use HasFactory, BelongsToTenant; // <-- 2. Gunakan Trait
 
     // Nama tabel adalah 'events' (plural), jadi tidak perlu properti $table
     
     protected $fillable = [
+        'tenant_id', // Tambahkan ini
         'nama_event',
         'tanggal_mulai',
         'tanggal_selesai',
@@ -28,6 +30,14 @@ class Event extends Model
         'tanggal_selesai' => 'date',
         'is_active' => 'boolean',
     ];
+
+    /**
+     * Relasi: Event ini milik satu Tenant.
+     */
+    public function tenant()
+    {
+        return $this->belongsTo(Tenant::class);
+    }
 
     // Relasi: Satu Event memiliki banyak log Distribusi
     public function distribusi()

@@ -10,17 +10,19 @@ class Vendor extends Model
     use HasFactory;
 
     protected $fillable = [
+        'event_id', // Tambahkan ini
         'nama_vendor',
         'kontak',
     ];
 
-    // Relasi: Satu Vendor menyediakan banyak Makanan
-    public function makanan()
+    public function event()
+    {
+        return $this->belongsTo(Event::class);
+    }
+
+    // Relasi: Satu Vendor bisa punya banyak Makanan
+    public function makanans()
     {
         return $this->hasMany(Makanan::class);
-    }
-    public function kelompoks()
-    {
-        return $this->hasMany(Kelompok::class);
     }
 }

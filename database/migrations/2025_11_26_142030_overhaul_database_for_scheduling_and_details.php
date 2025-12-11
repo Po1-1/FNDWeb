@@ -18,11 +18,11 @@ return new class extends Migration
         // 2. Override Vendor di Mahasiswa (Jika 1 anak beda vendor)
         Schema::table('mahasiswas', function (Blueprint $table) {
             $table->foreignId('custom_vendor_id')
-                  ->nullable()
-                  ->after('kelompok_id')
-                  ->constrained('vendors')
-                  ->onDelete('set null'); 
-                  // Jika diisi, ini menimpa vendor kelompok
+                ->nullable()
+                ->after('kelompok_id')
+                ->constrained('vendors')
+                ->onDelete('set null');
+            // Jika diisi, ini menimpa vendor kelompok
         });
 
         // 3. Tabel Jadwal Kelompok (Per Hari, Per Waktu)
@@ -33,9 +33,9 @@ return new class extends Migration
             $table->enum('waktu_makan', ['pagi', 'siang', 'sore', 'malam']);
             $table->foreignId('vendor_id')->constrained('vendors')->onDelete('cascade');
             $table->timestamps();
-            
+
             // Satu kelompok hanya punya 1 vendor per waktu di hari yg sama
-            $table->unique(['kelompok_id', 'hari_ke', 'waktu_makan']); 
+            $table->unique(['kelompok_id', 'hari_ke', 'waktu_makan']);
         });
 
         // 4. Update Tabel Distribusi (Header Transaksi)
@@ -53,7 +53,7 @@ return new class extends Migration
             $table->foreignId('mahasiswa_id')->constrained('mahasiswas');
             // Kita simpan ID Vendor di sini sebagai SNAPSHOT. 
             // Jadi kalau jadwal berubah besok, data sejarah hari ini tetap benar.
-            $table->foreignId('vendor_id_snapshot')->constrained('vendors'); 
+            $table->foreignId('vendor_id_snapshot')->constrained('vendors');
             $table->timestamps();
         });
     }

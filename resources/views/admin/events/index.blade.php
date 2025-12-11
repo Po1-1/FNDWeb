@@ -14,8 +14,7 @@
                         <tr>
                             <th>Status</th>
                             <th>Nama Event</th>
-                            <th>Tanggal Mulai</th>
-                            <th>Tanggal Selesai</th>
+                            <th>Tanggal</th>
                             <th>Aksi</th>
                         </tr>
                     </thead>
@@ -30,11 +29,27 @@
                                     @endif
                                 </td>
                                 <td>{{ $event->nama_event }}</td>
-                                <td>{{ $event->tanggal_mulai->format('d M Y') }}</td>
-                                <td>{{ $event->tanggal_selesai->format('d M Y') }}</td>
+                                <td>{{ $event->tanggal_mulai->format('d M Y') }} - {{ $event->tanggal_selesai->format('d M Y') }}</td>
                                 <td>
+                                    @if (session('active_event_id') == $event->id)
+                                        <span class="badge bg-success"><i class="bi bi-check-circle-fill"></i> Aktif</span>
+                                    @else
+                                        <span class="badge bg-secondary">Tidak Aktif</span>
+                                    @endif
+                                </td>
+                                <td class="text-end">
+                                    @if (session('active_event_id') != $event->id)
+                                        <a href="{{ route('admin.events.setActive', $event) }}" class="btn btn-sm btn-success">Aktifkan</a>
+                                    @endif
                                     <a href="{{ route('admin.events.edit', $event) }}" class="btn btn-sm btn-warning">Edit</a>
-                                    </td>
+                                    <form action="{{ route('admin.events.destroy', $event) }}" method="POST" class="d-inline" onsubmit="return confirm('Yakin ingin menghapus event ini?');">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="btn btn-sm btn-danger">
+                                            <i class="fas fa-trash"></i> Hapus
+                                        </button>
+                                    </form>
+                                </td>
                             </tr>
                         @empty
                             <tr>

@@ -2,14 +2,23 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Kelompok extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
+        'event_id', // Tambahkan ini
         'nama',
-        'vendor_id',
+        'vendor_id', // Vendor default untuk kelompok ini
     ];
+
+    public function event()
+    {
+        return $this->belongsTo(Event::class);
+    }
 
     public function mahasiswas()
     {
@@ -19,6 +28,11 @@ class Kelompok extends Model
     public function vendor()
     {
         return $this->belongsTo(Vendor::class);
+    }
+
+    public function distribusi()
+    {
+        return $this->hasMany(Distribusi::class);
     }
 
     // Relasi Baru: Jadwal

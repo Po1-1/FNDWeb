@@ -11,7 +11,10 @@ class VendorController extends Controller
     // Menampilkan daftar semua vendor
     public function index()
     {
-        $vendors = Vendor::paginate(10);
+        $activeEventId = session('active_event_id');
+        $vendors = Vendor::where('event_id', $activeEventId)
+            ->orderBy('nama_vendor')
+            ->paginate(10);
         return view('admin.vendors.index', compact('vendors'));
     }
 
@@ -24,50 +27,53 @@ class VendorController extends Controller
     // Menyimpan vendor baru ke database
     public function store(Request $request)
     {
+        $activeEventId = session('active_event_id');
         $request->validate([
             'nama_vendor' => 'required|string|max:255',
-            'kontak' => 'nullable|string|max:100',
+            'kontak' => 'nullable|string|max:255',
         ]);
 
-        Vendor::create($request->all());
+        Vendor::create([
+            'event_id' => $activeEventId,
+            'nama_vendor' => $request->nama_vendor,
+            'kontak' => $request->kontak,
+        ]);
 
-        return redirect()->route('admin.vendors.index')
-                         ->with('success', 'Vendor berhasil ditambahkan.');
+        return redirect()->route('admin.vendors.index')->with('success', 'Vendor berhasil ditambahkan.');
     }
 
     // Menampilkan form untuk mengedit vendor
     public function edit(Vendor $vendor)
     {
-        // Menggunakan Route Model Binding
+        if ($vendor->event_id != session('active_event_id')) {
+            abort(404);
+        }
         return view('admin.vendors.edit', compact('vendor'));
     }
 
     // Update data vendor di database
     public function update(Request $request, Vendor $vendor)
     {
+        if ($vendor->event_id != session('active_event_id')) {
+            abort(404);
+        }
         $request->validate([
             'nama_vendor' => 'required|string|max:255',
-            'kontak' => 'nullable|string|max:100',
+            'kontak' => 'nullable|string|max:255',
         ]);
 
         $vendor->update($request->all());
 
-        return redirect()->route('admin.vendors.index')
-                         ->with('success', 'Vendor berhasil diperbarui.');
+        return redirect()->route('admin.vendors.index')->with('success', 'Vendor berhasil diperbarui.');
     }
 
     // Menghapus vendor dari database
     public function destroy(Vendor $vendor)
     {
-        // Tambahkan logika pengecekan jika vendor masih punya makanan
-        if ($vendor->makanan()->count() > 0) {
-            return redirect()->route('admin.vendors.index')
-                             ->with('error', 'Vendor tidak bisa dihapus karena masih memiliki menu makanan.');
+        if ($vendor->event_id != session('active_event_id')) {
+            abort(404);
         }
-        
         $vendor->delete();
-
-        return redirect()->route('admin.vendors.index')
-                         ->with('success', 'Vendor berhasil dihapus.');
+        return redirect()->route('admin.vendors.index')->with('success', 'Vendor berhasil dihapus.');
     }
 }

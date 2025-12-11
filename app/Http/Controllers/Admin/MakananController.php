@@ -9,74 +9,80 @@ use Illuminate\Http\Request;
 
 class MakananController extends Controller
 {
-    // Menampilkan daftar makanan
     public function index()
     {
-        // Eager load relasi 'vendor' untuk efisiensi
-        $makanans = Makanan::with('vendor')->paginate(10);
+        $activeEventId = session('active_event_id');
+        $makanans = Makanan::where('event_id', $activeEventId)
+            ->with('vendor')
+            ->orderBy('nama_menu')
+            ->paginate(10);
         return view('admin.makanan.index', compact('makanans'));
     }
 
-    // Menampilkan form create
     public function create()
     {
-        $vendors = Vendor::all(); // Diperlukan untuk dropdown
+        $activeEventId = session('active_event_id');
+        $vendors = Vendor::where('event_id', $activeEventId)->orderBy('nama_vendor')->get();
         return view('admin.makanan.create', compact('vendors'));
     }
 
-    // Menyimpan makanan baru
     public function store(Request $request)
     {
+        $activeEventId = session('active_event_id');
         $request->validate([
             'vendor_id' => 'required|exists:vendors,id',
             'nama_menu' => 'required|string|max:255',
-            'deskripsi' => 'required|string',
-            'bahan' => 'required|string',
+            'deskripsi' => 'nullable|string',
+            'bahan' => 'nullable|string',
             'is_vegan' => 'boolean',
         ]);
 
-        // Handle checkbox 'is_vegan'
-        $data = $request->all();
+        $data = $request->except('is_vegan');
         $data['is_vegan'] = $request->has('is_vegan');
+        $data['event_id'] = $activeEventId;
 
         Makanan::create($data);
 
-        return redirect()->route('admin.makanan.index')
-                         ->with('success', 'Menu makanan berhasil ditambahkan.');
+        return redirect()->route('admin.makanan.index')->with('success', 'Menu makanan berhasil ditambahkan.');
     }
 
-    // Menampilkan form edit
     public function edit(Makanan $makanan)
     {
-        $vendors = Vendor::all();
+        if ($makanan->event_id != session('active_event_id')) {
+            abort(404);
+        }
+        $activeEventId = session('active_event_id');
+        $vendors = Vendor::where('event_id', $activeEventId)->orderBy('nama_vendor')->get();
         return view('admin.makanan.edit', compact('makanan', 'vendors'));
     }
 
-    // Update makanan
     public function update(Request $request, Makanan $makanan)
     {
+        if ($makanan->event_id != session('active_event_id')) {
+            abort(404);
+        }
         $request->validate([
             'vendor_id' => 'required|exists:vendors,id',
             'nama_menu' => 'required|string|max:255',
-            'deskripsi' => 'required|string',
-            'bahan' => 'required|string',
+            'deskripsi' => 'nullable|string',
+            'bahan' => 'nullable|string',
             'is_vegan' => 'boolean',
         ]);
 
-        $data = $request->all();
+        $data = $request->except('is_vegan');
         $data['is_vegan'] = $request->has('is_vegan');
 
         $makanan->update($data);
 
-        return redirect()->route('admin.makanan.index')
-                         ->with('success', 'Menu makanan berhasil diperbarui.');
+        return redirect()->route('admin.makanan.index')->with('success', 'Menu makanan berhasil diperbarui.');
     }
 
-    // Hapus makanan
     public function destroy(Makanan $makanan)
     {
+        if ($makanan->event_id != session('active_event_id')) {
+            abort(404);
+        }
         $makanan->delete();
-        return redirect()->route('admin.makanan.index')
-                         ->with('success', 'Menu makanan berhasil dihapus.');
+        return redirect()->route('admin.makanan.index')->with('success', 'Menu makanan berhasil dihapus.');
     }
 }

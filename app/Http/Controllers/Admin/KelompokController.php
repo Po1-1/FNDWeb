@@ -4,60 +4,107 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Kelompok;
-use Illuminate\Http\Request;
+use App\Models\Mahasiswa;
 use App\Models\Vendor;
 use App\Models\JadwalKelompok;
-use App\Models\Mahasiswa;
 use App\Models\Event;
-use Carbon\Carbon;
+use Illuminate\Http\Request;
+use Illuminate\Validation\Rule; // PASTIKAN INI ADA
 
 class KelompokController extends Controller
 {
     public function index()
     {
-        $kelompoks = Kelompok::withCount('vendor', 'mahasiswas')->paginate(15);
+        $activeEventId = session('active_event_id');
+
+        $kelompoks = Kelompok::where('event_id', $activeEventId)
+            ->withCount('mahasiswas')
+            ->orderBy('nama')
+            ->paginate(10);
+
         return view('admin.kelompok.index', compact('kelompoks'));
     }
 
     public function create()
     {
-        $vendors = Vendor::orderBy('nama_vendor')->get();
+        $activeEventId = session('active_event_id');
+        $vendors = Vendor::where('event_id', $activeEventId)->orderBy('nama_vendor')->get();
         return view('admin.kelompok.create', compact('vendors'));
     }
 
     public function store(Request $request)
     {
+        $activeEventId = session('active_event_id');
+        if (!$activeEventId) {
+            return redirect()->route('admin.events.index')->with('error', 'Silakan pilih event yang aktif terlebih dahulu.');
+        }
+
         $request->validate([
-            'nama' => 'required|string|unique:kelompoks',
+            'nama' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('kelompoks')->where(function ($query) use ($activeEventId) {
+                    return $query->where('event_id', $activeEventId);
+                }),
+            ],
             'vendor_id' => 'nullable|exists:vendors,id',
         ]);
 
-        Kelompok::create($request->all());
+        Kelompok::create([
+            'event_id' => $activeEventId,
+            'nama' => $request->nama,
+            'vendor_id' => $request->vendor_id,
+        ]);
 
-        return redirect()->route('admin.kelompok.index')
-            ->with('success', 'Kelompok baru berhasil dibuat.');
+        return redirect()->route('admin.kelompok.index')->with('success', 'Kelompok berhasil ditambahkan.');
     }
 
-    // EDIT: Menampilkan Grid Jadwal & List Mahasiswa
+    public function show(Kelompok $kelompok)
+    {
+        // Eager load relasi untuk efisiensi
+        $kelompok->load('mahasiswas', 'vendor');
+        return view('admin.kelompok.show', compact('kelompok'));
+    }
+
     public function edit(Kelompok $kelompok)
     {
-        $vendors = Vendor::orderBy('nama_vendor')->get();
+        if ($kelompok->event_id != session('active_event_id')) {
+            abort(404);
+        }
+
+        $activeEvent = Event::find(session('active_event_id'));
+        if (!$activeEvent) {
+            return redirect()->route('admin.events.index')->with('error', 'Silakan pilih event.');
+        }
+
+        $totalHari = $activeEvent->jumlah_hari; // <-- Gunakan kolom baru
+        $vendors = Vendor::where('event_id', $activeEvent->id)->orderBy('nama_vendor')->get();
         
-        // Load mahasiswa beserta info custom vendor & alergi
-        $kelompok->load(['mahasiswas.alergi', 'mahasiswas.customVendor', 'jadwal']);
+        $kelompok->load(['mahasiswas', 'jadwal']);
 
-        // Hitung durasi event untuk membuat kolom tabel
-        $event = Event::where('is_active', true)->first();
-        $totalHari = $event ? Carbon::parse($event->tanggal_mulai)->diffInDays($event->tanggal_selesai) + 1 : 3; // Default 3 hari jika tidak ada event
-
-        return view('admin.kelompok.edit', compact('kelompok', 'vendors', 'totalHari'));
+        return view('admin.kelompok.edit', compact('kelompok', 'totalHari', 'vendors'));
     }
 
     // UPDATE: Menyimpan Jadwal & Custom Vendor
     public function update(Request $request, Kelompok $kelompok)
     {
+        $activeEventId = session('active_event_id');
+        if ($kelompok->event_id != $activeEventId) {
+            abort(404);
+        }
+
         $request->validate([
-            'nama' => 'required|string|max:255|unique:kelompoks,nama,' . $kelompok->id,
+            'nama' => [
+                'required',
+                'string',
+                'max:255',
+                // INI PERBAIKANNYA: Aturan unik sekarang scoped ke event aktif
+                // dan mengabaikan ID kelompok yang sedang diedit.
+                Rule::unique('kelompoks')->where(function ($query) use ($activeEventId) {
+                    return $query->where('event_id', $activeEventId);
+                })->ignore($kelompok->id),
+            ],
         ]);
 
         // 1. Update Nama Dasar
@@ -82,6 +129,7 @@ class KelompokController extends Controller
             foreach ($request->jadwal as $hari => $waktuData) {
                 foreach ($waktuData as $waktu => $vendorId) {
                     if ($vendorId) {
+                        // Sekarang JadwalKelompok sudah dikenali
                         JadwalKelompok::create([
                             'kelompok_id' => $kelompok->id,
                             'hari_ke' => $hari,

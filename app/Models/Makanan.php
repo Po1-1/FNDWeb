@@ -10,12 +10,18 @@ class Makanan extends Model
     use HasFactory;
 
     protected $fillable = [
+        'event_id', // Tambahkan ini
         'vendor_id',
         'nama_menu',
         'deskripsi',
         'bahan',
         'is_vegan',
     ];
+
+    public function event()
+    {
+        return $this->belongsTo(Event::class);
+    }
 
     // Relasi: Satu Makanan dimiliki oleh satu Vendor
     public function vendor()

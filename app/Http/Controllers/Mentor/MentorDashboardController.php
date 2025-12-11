@@ -3,23 +3,36 @@
 namespace App\Http\Controllers\Mentor;
 
 use App\Http\Controllers\Controller;
+use App\Models\DistribusiBukti;
+use App\Models\Event;
+use App\Models\Mahasiswa;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use App\Models\Mahasiswa;
-use App\Models\Distribusi; // <-- Tambahkan
-use App\Models\DistribusiBukti; // <-- Tambahkan
-use Illuminate\Support\Facades\Storage; // <-- Tambahkan
+use Illuminate\Support\Facades\Storage;
 
 class MentorDashboardController extends Controller
 {
-    // Menampilkan dashboard mentor yang kini berfungsi sebagai halaman pencarian
+    private function getActiveEvent()
+    {
+        return Event::where('tenant_id', Auth::user()->tenant_id)
+                      ->where('is_active', true)
+                      ->first();
+    }
+
     public function index(Request $request)
     {
         $user = Auth::user();
-        
-        // --- TAMBAHKAN LOGIKA INI ---
-        // Ambil data mentor dan kelompoknya untuk ditampilkan di dashboard
-        $mentorData = Mahasiswa::where('user_id', $user->id)->with('kelompok')->first();
+        $activeEvent = $this->getActiveEvent();
+
+        if (!$activeEvent) {
+            return view('mentor.dashboard-no-event');
+        }
+
+        // --- UBAH BAGIAN INI SAJA ---
+        $mentorData = Mahasiswa::where('user_id', $user->id)
+            ->where('event_id', $activeEvent->id)
+            ->with('kelompok')
+            ->first();
         // -------------------------
 
         $query = $request->input('query');
@@ -27,14 +40,12 @@ class MentorDashboardController extends Controller
         // Method `when()` akan otomatis menerapkan filter HANYA JIKA $query tidak kosong.
         // Jika $query kosong, query ini akan mengambil SEMUA mahasiswa.
         $results = Mahasiswa::query()
+            ->where('event_id', $activeEvent->id) // <-- Filter mahasiswa dari event aktif
             ->with(['alergi', 'kelompok.vendor'])
             ->when($query, function ($q, $query) {
                 $q->where(function ($q) use ($query) {
                     $q->where('nama', 'LIKE', "%{$query}%")
-                        ->orWhere('nim', 'LIKE', "%{$query}%")
-                        ->orWhereHas('kelompok', function ($kelompokQuery) use ($query) {
-                            $kelompokQuery->where('nama', 'LIKE', "%{$query}%");
-                        });
+                        ->orWhere('nim', 'LIKE', "%{$query}%");
                 });
             })
             ->orderBy('nama')
@@ -49,10 +60,13 @@ class MentorDashboardController extends Controller
     public function showKelompok()
     {
         $user = Auth::user();
-        $mentorData = Mahasiswa::where('user_id', $user->id)->first();
+        $activeEvent = $this->getActiveEvent();
+        if (!$activeEvent) return redirect()->route('mentor.dashboard')->with('error', 'Tidak ada event yang aktif.');
+
+        $mentorData = Mahasiswa::where('user_id', $user->id)->where('event_id', $activeEvent->id)->first();
 
         if (!$mentorData || !$mentorData->kelompok_id) {
-            return redirect()->route('mentor.dashboard')->with('error', 'Anda tidak terdaftar di kelompok manapun.');
+            return redirect()->route('mentor.dashboard')->with('error', 'Anda tidak terdaftar di kelompok manapun pada event ini.');
         }
 
         $kelompok = $mentorData->kelompok()->with('mahasiswas')->first();
@@ -67,18 +81,23 @@ class MentorDashboardController extends Controller
     public function manageKelompok()
     {
         $user = Auth::user();
-        $mentorData = Mahasiswa::where('user_id', $user->id)->first();
+        $activeEvent = $this->getActiveEvent();
+        if (!$activeEvent) return redirect()->route('mentor.dashboard')->with('error', 'Tidak ada event yang aktif.');
+
+        $mentorData = Mahasiswa::where('user_id', $user->id)->where('event_id', $activeEvent->id)->first();
 
         if (!$mentorData || !$mentorData->kelompok_id) {
-            return redirect()->route('mentor.dashboard')->with('error', 'Anda tidak terdaftar di kelompok manapun.');
+            return redirect()->route('mentor.dashboard')->with('error', 'Anda tidak terdaftar di kelompok manapun pada event ini.');
         }
 
         // Ambil data kelompok beserta anggota dan riwayat distribusi + buktinya
         $kelompok = $mentorData->kelompok()
             ->with([
                 'mahasiswas',
-                'distribusi' => function ($query) {
-                    $query->with('buktis')->orderBy('created_at', 'desc');
+                'distribusi' => function ($query) use ($activeEvent) {
+                    $query->where('event_id', $activeEvent->id)
+                        ->with('buktis')
+                        ->orderBy('created_at', 'desc');
                 }
             ])
             ->first();

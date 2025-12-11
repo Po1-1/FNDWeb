@@ -20,7 +20,8 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-        'role', // Tambahkan role
+        'role',
+        'tenant_id', // Tambahkan ini
     ];
 
     /**
@@ -46,9 +47,11 @@ class User extends Authenticatable
         ];
     }
 
-    // Relasi: Satu User (Mentor) terhubung ke satu data Mahasiswa
-    public function mahasiswa()
+    /**
+     * Relasi: User (admin, mentor, kasir) milik satu Tenant.
+     */
+    public function tenant()
     {
-        return $this->hasOne(Mahasiswa::class);
+        return $this->belongsTo(Tenant::class);
     }
 }

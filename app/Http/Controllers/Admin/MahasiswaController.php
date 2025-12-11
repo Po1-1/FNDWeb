@@ -21,9 +21,11 @@ class MahasiswaController extends Controller
      */
     public function index(Request $request)
     {
+        $activeEventId = session('active_event_id');
         $search = $request->input('search');
 
         $mahasiswas = Mahasiswa::query()
+            ->where('event_id', $activeEventId) // <-- FILTER BERDASARKAN EVENT AKTIF
             ->with(['kelompok', 'alergi'])
             ->when($search, function ($q, $search) {
                 $q->where('nama', 'LIKE', "%{$search}%")
@@ -44,8 +46,10 @@ class MahasiswaController extends Controller
      */
     public function create()
     {
-        $kelompoks = Kelompok::orderBy('nama')->get();
-        $alergis = Alergi::orderBy('nama')->get();
+        $activeEventId = session('active_event_id');
+        // Ambil kelompok dan alergi yang termasuk dalam event aktif saja
+        $kelompoks = Kelompok::where('event_id', $activeEventId)->orderBy('nama')->get();
+        $alergis = Alergi::where('event_id', $activeEventId)->orderBy('nama')->get();
 
         return view('admin.mahasiswa.create', compact('kelompoks', 'alergis'));
     }
@@ -55,6 +59,8 @@ class MahasiswaController extends Controller
      */
     public function store(Request $request)
     {
+        $activeEventId = session('active_event_id');
+
         $validator = Validator::make($request->all(), [
             'nim' => 'required|string|unique:mahasiswas|max:20',
             'nama' => 'required|string|max:255',
@@ -74,6 +80,7 @@ class MahasiswaController extends Controller
 
         $dataMahasiswa = $request->except('alergis');
         $dataMahasiswa['is_vegan'] = $request->has('is_vegan');
+        $dataMahasiswa['event_id'] = $activeEventId; // <-- TAMBAHKAN EVENT ID
 
         $mahasiswa = new Mahasiswa($dataMahasiswa);
         $mahasiswa->save();
@@ -98,16 +105,17 @@ class MahasiswaController extends Controller
      */
     public function edit(Mahasiswa $mahasiswa)
     {
-        $kelompoks = Kelompok::orderBy('nama')->get();
-        $alergis = Alergi::orderBy('nama')->get();
-        $mahasiswaAlergiIds = $mahasiswa->alergi->pluck('id')->toArray();
+        $activeEventId = session('active_event_id');
+        // Pastikan mahasiswa ini dari event yang benar
+        if ($mahasiswa->event_id != $activeEventId) {
+            abort(404);
+        }
 
-        return view('admin.mahasiswa.edit', compact(
-            'mahasiswa',
-            'kelompoks',
-            'alergis',
-            'mahasiswaAlergiIds'
-        ));
+        $kelompoks = Kelompok::where('event_id', $activeEventId)->orderBy('nama')->get();
+        $alergis = Alergi::where('event_id', $activeEventId)->orderBy('nama')->get();
+        $mahasiswa->load('alergi');
+
+        return view('admin.mahasiswa.edit', compact('mahasiswa', 'kelompoks', 'alergis'));
     }
 
     /**
@@ -115,7 +123,13 @@ class MahasiswaController extends Controller
      */
     public function update(Request $request, Mahasiswa $mahasiswa)
     {
-        $request->validate([
+        $activeEventId = session('active_event_id');
+        // Pastikan mahasiswa ini dari event yang benar
+        if ($mahasiswa->event_id != $activeEventId) {
+            abort(404);
+        }
+
+        $validator = Validator::make($request->all(), [
             'nim' => 'required|string|max:20|unique:mahasiswas,nim,' . $mahasiswa->id,
             'nama' => 'required|string|max:255',
             'prodi' => 'required|string',
@@ -125,6 +139,12 @@ class MahasiswaController extends Controller
             'alergis' => 'nullable|array',
             'alergis.*' => 'exists:alergis,id',
         ]);
+
+        if ($validator->fails()) {
+            return redirect()->route('admin.mahasiswa.edit', $mahasiswa->id)
+                ->withErrors($validator)
+                ->withInput();
+        }
 
         $dataMahasiswa = $request->except('alergis');
         $dataMahasiswa['is_vegan'] = $request->has('is_vegan');

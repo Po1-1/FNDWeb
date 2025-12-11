@@ -10,9 +10,18 @@ use Illuminate\Support\Str;
 use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Maatwebsite\Excel\Concerns\WithValidation;
+use Illuminate\Support\Facades\Auth; // Tambahkan ini
 
 class MahasiswaImport implements ToModel, WithHeadingRow, WithValidation
 {
+    private $activeEventId;
+
+    public function __construct()
+    {
+        // Ambil event_id yang aktif saat objek import dibuat
+        $this->activeEventId = session('active_event_id');
+    }
+
     /**
     * @param array $row
     *
@@ -61,6 +70,7 @@ class MahasiswaImport implements ToModel, WithHeadingRow, WithValidation
 
         // 4. BUAT MAHASISWA
         return new Mahasiswa([
+            'event_id'    => $this->activeEventId, // <-- INI KUNCINYA
             'nim'         => $row['nim'],
             'nama'        => $row['nama'],
             'prodi'       => $row['prodi'],
