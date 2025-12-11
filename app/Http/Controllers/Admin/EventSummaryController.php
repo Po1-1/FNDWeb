@@ -28,6 +28,20 @@ class EventSummaryController extends Controller
         return view('admin.summary.index', compact('summaries', 'events', 'selectedEventId'));
     }
 
+    /**
+     * Menampilkan detail satu summary.
+     * INI ADALAH PERBAIKAN UTAMA.
+     */
+    public function show(EventSummary $summary)
+    {
+        // Pastikan summary ini milik event yang ada di tenant user
+        if ($summary->event->tenant_id !== auth()->user()->tenant_id) {
+            abort(403);
+        }
+
+        return view('admin.summary.show', compact('summary'));
+    }
+
     public function showGeneratorForm(Request $request)
     {
         $event = Event::where('is_active', true)->first();
@@ -68,68 +82,49 @@ class EventSummaryController extends Controller
             'catatan_harian' => 'nullable|string',
         ]);
 
-        $event = Event::find($request->event_id);
         $tanggal = Carbon::parse($request->tanggal_summary);
 
-        // 1. KALKULASI LOGISTIK (DENGAN SISA STOK)
-        $logistikAwal = InventarisLogistik::where('event_id', $event->id)->get()->keyBy('id');
-        $logistikUsage = LogPenggunaanLogistik::where('event_id', $event->id)
-            ->whereDate('tanggal_penggunaan', '<=', $tanggal) // Akumulasi dari awal event
-            ->select('inventaris_logistik_id', DB::raw('SUM(jumlah_digunakan) as total_digunakan'))
-            ->groupBy('inventaris_logistik_id')
+        // --- MULAI PERBAIKAN: Tambahkan semua kalkulasi di sini ---
+
+        // 1. Kalkulasi Rekap Penggunaan Logistik
+        $rekapLogistik = LogPenggunaanLogistik::whereDate('tanggal_penggunaan', $tanggal)
+            ->join('inventaris_logistiks', 'log_penggunaan_logistiks.inventaris_logistik_id', '=', 'inventaris_logistiks.id')
+            ->where('inventaris_logistiks.event_id', $request->event_id)
+            ->select('inventaris_logistiks.nama_item', 'inventaris_logistiks.satuan', DB::raw('SUM(log_penggunaan_logistiks.jumlah_digunakan) as total_digunakan'))
+            ->groupBy('inventaris_logistiks.nama_item', 'inventaris_logistiks.satuan')
             ->get()
-            ->keyBy('inventaris_logistik_id');
+            ->toArray();
 
-        $rekapLogistikSnapshot = $logistikAwal->map(function ($item) use ($logistikUsage) {
-            $penggunaan = $logistikUsage->get($item->id);
-            $totalDigunakan = $penggunaan ? $penggunaan->total_digunakan : 0;
-            return [
-                'nama_item' => $item->nama_item,
-                'stok_awal' => (int) $item->stok_awal,
-                'total_digunakan' => (int) $totalDigunakan,
-                'sisa_stok' => (int) $item->stok_awal - $totalDigunakan,
-                'satuan' => $item->satuan
-            ];
-        })->values()->all();
-
-        // 2. KALKULASI PENGGUNAAN MAKANAN (DARI DETAIL - LEBIH AKURAT)
-        // Mengambil data dari tabel distribusi_details yang menyimpan vendor_id_snapshot
-        $rekapMakananQuery = DistribusiDetail::query()
+        // 2. Kalkulasi Rekap Vendor & Makanan
+        $rekapQuery = DistribusiDetail::query()
             ->join('distribusis', 'distribusi_details.distribusi_id', '=', 'distribusis.id')
+            ->join('vendors', 'distribusi_details.vendor_id_snapshot', '=', 'vendors.id')
+            ->where('distribusis.event_id', $request->event_id)
             ->whereDate('distribusis.created_at', $tanggal)
-            ->where('distribusis.tipe', 'makanan')
-            ->with('vendor')
-            ->select('vendor_id_snapshot', DB::raw('count(*) as total'))
-            ->groupBy('vendor_id_snapshot')
-            ->get();
+            ->select(
+                'vendors.nama_vendor as vendor_nama',
+                DB::raw('COUNT(distribusi_details.id) as total_diambil')
+            )
+            ->groupBy('vendors.nama_vendor')
+            ->orderBy('vendors.nama_vendor');
 
-        $rekapMakananSnapshot = [];
-        foreach ($rekapMakananQuery as $item) {
-            $rekapMakananSnapshot[] = [
-                'vendor_nama' => $item->vendor->nama_vendor ?? 'Vendor Terhapus',
-                'total_diambil' => $item->total
-            ];
-        }
+        $vendorRekap = $rekapQuery->get()->toArray();
+        $makananRekap = $rekapQuery->get()->toArray(); // Untuk snapshot, data vendor dan makanan sama
 
-        // 3. Simpan Snapshot
-        $summary = EventSummary::updateOrCreate(
-            [
-                'event_id' => $event->id,
-                'tanggal_summary' => $tanggal,
-            ],
-            [
-                'rekap_penggunaan_logistik' => $rekapLogistikSnapshot,
-                'rekap_penggunaan_makanan' => $rekapMakananSnapshot,
-                'sisa_galon' => $request->sisa_galon,
-                'catatan_harian' => $request->catatan_harian,
-            ]
-        );
+        // --- SELESAI PERBAIKAN ---
 
-        return redirect()->route('admin.summaries.show', $summary)->with('success', 'Laporan harian berhasil di-generate.');
-    }
+        $summary = EventSummary::updateOrCreate([
+            'event_id' => $request->event_id,
+            'tanggal_summary' => $tanggal,
+        ], [
+            'sisa_galon' => $request->sisa_galon,
+            'catatan_harian' => $request->catatan_harian,
+            'rekap_penggunaan_logistik' => $rekapLogistik,
+            'vendor_bertugas_hari_ini' => $vendorRekap,
+            'rekap_penggunaan_makanan' => $makananRekap,
+        ]);
 
-    public function show(EventSummary $summary)
-    {
-        return view('admin.summary.show', compact('summary'));
+        return redirect()->route('admin.summaries.show', $summary->id)
+            ->with('success', 'Laporan harian berhasil digenerate/diperbarui.');
     }
 }
