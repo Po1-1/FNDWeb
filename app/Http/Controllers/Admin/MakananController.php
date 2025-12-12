@@ -44,9 +44,9 @@ class MakananController extends Controller
         $data['event_id'] = $activeEventId;
 
         if ($request->hasFile('image')) {
-            // Simpan file dan dapatkan path-nya
-            $path = $request->file('image')->store('public/makanan_images');
-            // Simpan path tersebut ke database
+            // Simpan file ke 'storage/app/public/makanan_images'
+            // dan simpan path 'makanan_images/namafile.ext' ke database.
+            $path = $request->file('image')->store('makanan_images', 'public');
             $data['image_path'] = $path;
         }
 
@@ -83,10 +83,12 @@ class MakananController extends Controller
         $data['is_vegan'] = $request->has('is_vegan');
 
         if ($request->hasFile('image')) {
+            // Hapus gambar lama jika ada
             if ($makanan->image_path) {
-                Storage::delete($makanan->image_path);
+                Storage::disk('public')->delete($makanan->image_path);
             }
-            $path = $request->file('image')->store('public/makanan_images');
+            // Simpan gambar baru
+            $path = $request->file('image')->store('makanan_images', 'public');
             $data['image_path'] = $path;
         }
 
@@ -100,10 +102,12 @@ class MakananController extends Controller
         if ($makanan->event_id != session('active_event_id')) {
             abort(404);
         }
+        // Hapus gambar dari storage jika ada
         if ($makanan->image_path) {
-            Storage::delete($makanan->image_path);
+            Storage::disk('public')->delete($makanan->image_path);
         }
         $makanan->delete();
+
         return redirect()->route('admin.makanan.index')->with('success', 'Menu makanan berhasil dihapus.');
     }
 }

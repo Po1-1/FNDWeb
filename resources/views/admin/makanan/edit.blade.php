@@ -48,13 +48,13 @@
                 </div>
 
                 <div class="mb-3">
-                    <label for="image" class="form-label">Upload Gambar Baru (Opsional)</label>
+                    <label for="image" class="form-label">Gambar Menu (Opsional)</label>
                     <input class="form-control @error('image') is-invalid @enderror" type="file" id="image" name="image">
                     @error('image') <div class="invalid-feedback">{{ $message }}</div> @enderror
                     @if ($makanan->image_path)
                         <div class="mt-2">
                             <small class="text-muted">Gambar saat ini:</small><br>
-                            <img src="{{ Storage::url($makanan->image_path) }}" alt="{{ $makanan->nama_menu }}" class="img-thumbnail mt-1" width="150">
+                            <img src="{{ asset('storage/' . $makanan->image_path) }}" alt="{{ $makanan->nama_menu }}" class="img-thumbnail mt-1" width="150">
                         </div>
                     @endif
                 </div>

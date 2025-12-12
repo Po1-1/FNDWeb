@@ -25,7 +25,8 @@
                             <tr>
                                 <td>
                                     @if($makanan->image_path)
-                                        <img src="{{ Storage::url($makanan->image_path) }}" alt="{{ $makanan->nama_menu }}" class="img-thumbnail" width="70">
+                                        {{-- Gunakan asset() untuk membuat URL yang benar --}}
+                                        <img src="{{ asset('storage/' . $makanan->image_path) }}" alt="{{ $makanan->nama_menu }}" class="img-thumbnail" width="70">
                                     @else
                                         <div class="img-thumbnail bg-light text-center d-flex align-items-center justify-content-center" style="width: 70px; height: 50px;">
                                             <i class="bi bi-image text-muted"></i>
