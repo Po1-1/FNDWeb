@@ -22,20 +22,15 @@
                         @forelse ($events as $event)
                             <tr>
                                 <td>
-                                    @if($event->is_active)
-                                        <span class="badge bg-success">Aktif</span>
-                                    @else
-                                        <span class="badge bg-secondary">Tidak Aktif</span>
-                                    @endif
-                                </td>
-                                <td>{{ $event->nama_event }}</td>
-                                <td>{{ $event->tanggal_mulai->format('d M Y') }} - {{ $event->tanggal_selesai->format('d M Y') }}</td>
-                                <td>
                                     @if (session('active_event_id') == $event->id)
                                         <span class="badge bg-success"><i class="bi bi-check-circle-fill"></i> Aktif</span>
                                     @else
                                         <span class="badge bg-secondary">Tidak Aktif</span>
                                     @endif
+
+                                </td>
+                                <td>{{ $event->nama_event }}</td>
+                                <td>{{ $event->tanggal_mulai->format('d M Y') }} - {{ $event->tanggal_selesai->format('d M Y') }}</td>
                                 </td>
                                 <td class="text-end">
                                     @if (session('active_event_id') != $event->id)

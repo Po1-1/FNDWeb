@@ -23,12 +23,6 @@
                         @error('tanggal_selesai') <div class="invalid-feedback">{{ $message }}</div> @enderror
                     </div>
                 </div>
-                <div class="mb-3">
-                    <div class="form-check form-switch">
-                        <input class="form-check-input" type="checkbox" role="switch" id="is_active" name="is_active" value="1" {{ old('is_active', $event->is_active) ? 'checked' : '' }}>
-                        <label class="form-check-label" for="is_active">Aktifkan Event Ini (Akan menonaktifkan event lain)</label>
-                    </div>
-                </div>
                 <div class="mt-4">
                     <a href="{{ route('admin.events.index') }}" class="btn btn-secondary me-2">Batal</a>
                     <button type="submit" class="btn btn-primary">Update</button>

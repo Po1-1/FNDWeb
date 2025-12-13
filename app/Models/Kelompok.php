@@ -43,4 +43,9 @@ class Kelompok extends Model
         // Jika ada jadwal spesifik, pakai vendor dari jadwal itu.
         return $jadwal ? $jadwal->vendor : null; 
     }
+
+    public function vendor()
+    {
+        return $this->belongsTo(\App\Models\Vendor::class, 'vendor_id');
+    }
 }

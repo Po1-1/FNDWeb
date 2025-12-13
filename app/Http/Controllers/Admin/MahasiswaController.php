@@ -9,6 +9,7 @@ use App\Models\Alergi;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 
 use App\Imports\MahasiswaImport;
 use Maatwebsite\Excel\Facades\Excel;
@@ -49,7 +50,8 @@ class MahasiswaController extends Controller
         $activeEventId = session('active_event_id');
         // Ambil kelompok dan alergi yang termasuk dalam event aktif saja
         $kelompoks = Kelompok::where('event_id', $activeEventId)->orderBy('nama')->get();
-        $alergis = Alergi::where('event_id', $activeEventId)->orderBy('nama')->get();
+        // Ambil alergi berdasarkan tenant (bukan event)
+        $alergis = Alergi::where('tenant_id', Auth::user()->tenant_id)->orderBy('nama')->get();
 
         return view('admin.mahasiswa.create', compact('kelompoks', 'alergis'));
     }
@@ -112,10 +114,16 @@ class MahasiswaController extends Controller
         }
 
         $kelompoks = Kelompok::where('event_id', $activeEventId)->orderBy('nama')->get();
-        $alergis = Alergi::where('event_id', $activeEventId)->orderBy('nama')->get();
+        // Ambil alergi berdasarkan tenant (bukan event)
+        $alergis = Alergi::where('tenant_id', Auth::user()->tenant_id)->orderBy('nama')->get();
+
+        // Pastikan relasi alergi ter-load
         $mahasiswa->load('alergi');
 
-        return view('admin.mahasiswa.edit', compact('mahasiswa', 'kelompoks', 'alergis'));
+        // Siapkan array id alergi agar view tidak error
+        $mahasiswaAlergiIds = $mahasiswa->alergi->pluck('id')->toArray();
+
+        return view('admin.mahasiswa.edit', compact('mahasiswa', 'kelompoks', 'alergis', 'mahasiswaAlergiIds'));
     }
 
     /**
