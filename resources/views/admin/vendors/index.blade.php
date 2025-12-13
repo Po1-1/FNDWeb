@@ -21,7 +21,7 @@
                     <tbody>
                         @forelse ($vendors as $vendor)
                             <tr>
-                                <td>{{ $vendor->id }}</td>
+                                <td>{{ $vendors->firstItem() + $loop->index }}</td>
                                 <td>{{ $vendor->nama_vendor }}</td>
                                 <td>{{ $vendor->kontak }}</td>
                                 <td>
