@@ -26,14 +26,30 @@ class MahasiswaController extends Controller
         $search = $request->input('search');
 
         $mahasiswas = Mahasiswa::query()
-            ->where('event_id', $activeEventId) // <-- FILTER BERDASARKAN EVENT AKTIF
+            // FILTER UTAMA BERDASARKAN EVENT AKTIF
+            ->where('event_id', $activeEventId)
+
             ->with(['kelompok', 'alergi'])
-            ->when($search, function ($q, $search) {
-                $q->where('nama', 'LIKE', "%{$search}%")
-                    ->orWhere('nim', 'LIKE', "%{$search}%")
-                    ->orWhereHas('kelompok', function ($kelompokQuery) use ($search) {
-                        $kelompokQuery->where('nama', 'LIKE', "%{$search}%");
-                    });
+
+            // 💡 FIX 1: PENCEGAHAN DUPLIKASI QUERY
+            // Pilih kolom spesifik dan paksa hasil unik berdasarkan ID Mahasiswa.
+            ->select('mahasiswas.*')
+            ->distinct('mahasiswas.id')
+
+            ->when($search, function ($q, $search) use ($activeEventId) {
+                $q->where(function ($subQ) use ($search, $activeEventId) { // Menggunakan subQ untuk grouping OR conditions
+
+                    $subQ->where('nama', 'LIKE', "%{$search}%")
+                        ->orWhere('nim', 'LIKE', "%{$search}%")
+
+                        // FIX 2: BATASI PENCARIAN KELOMPOK HANYA PADA EVENT AKTIF
+                        // Mencegah Mahasiswa dari Event lain muncul
+                        ->orWhereHas('kelompok', function ($kelompokQuery) use ($search, $activeEventId) {
+                            $kelompokQuery
+                                ->where('nama', 'LIKE', "%{$search}%")
+                                ->where('event_id', $activeEventId);
+                        });
+                });
             })
             ->orderBy('nama')
             ->paginate(15)

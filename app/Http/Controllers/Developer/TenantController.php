@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
+use Illuminate\Support\Str;
 
 class TenantController extends Controller
 {
@@ -35,10 +36,11 @@ class TenantController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'tenant_name' => ['required', 'string', 'max:255', 'unique:tenants,name'],
-            'admin_name' => ['required', 'string', 'max:255'],
-            'admin_email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
-            'admin_password' => ['required', 'confirmed', Rules\Password::defaults()],
+            // 💡 FIX: Tambahkan validasi unique:tenants,name untuk mencegah domain slug yang sama
+            'tenant_name' => 'required|string|max:255|unique:tenants,name', 
+            'admin_name' => 'required|string|max:255',
+            'admin_email' => 'required|email|unique:users,email',
+            'admin_password' => 'required|string|min:8|confirmed',
         ]);
 
         try {
@@ -46,6 +48,7 @@ class TenantController extends Controller
                 // 1. Buat Tenant
                 $tenant = Tenant::create([
                     'name' => $request->tenant_name,
+                    'domain' => Str::slug($request->tenant_name), // e.g., 'FND 2025' -> 'fnd-2025'
                 ]);
 
                 // 2. Buat User Admin untuk tenant tersebut

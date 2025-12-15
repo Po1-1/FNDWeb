@@ -37,6 +37,9 @@ class EventController extends Controller
                 ->where('id', '!=', $event->id)
                 ->update(['is_active' => false]);
             $event->update(['is_active' => true]);
+            
+            // 💡 FIX 1: Set session saat Event baru dibuat dan diaktifkan
+            session(['active_event_id' => $event->id]);
         }
 
         return redirect()->route('admin.events.index')
@@ -63,9 +66,18 @@ class EventController extends Controller
                 ->where('id', '!=', $event->id)
                 ->update(['is_active' => false]);
             $event->update(['is_active' => true]);
+            
+            // 💡 FIX 2: Set session saat Event diupdate dan diaktifkan
+            session(['active_event_id' => $event->id]);
+
         } else {
             // Jika checkbox tidak dicentang saat update
             $event->update(['is_active' => false]);
+            
+            // 💡 FIX 3: Hapus session jika event ini dinonaktifkan dan sedang aktif di session
+            if (session('active_event_id') == $event->id) {
+                session()->forget('active_event_id');
+            }
         }
 
         return redirect()->route('admin.events.index')
@@ -93,7 +105,7 @@ class EventController extends Controller
             abort(403, 'Anda tidak memiliki akses ke event ini.');
         }
 
-        // 2. Nonaktifkan semua event lain di tenant ini
+        // 2. Nonaktifkan event lain di tenant yang sama (per tenant, not global)
         Event::where('tenant_id', Auth::user()->tenant_id)
             ->where('id', '!=', $event->id)
             ->update(['is_active' => false]);
@@ -104,6 +116,7 @@ class EventController extends Controller
         // 4. Set session untuk admin (opsional, tapi baik untuk konsistensi)
         session(['active_event_id' => $event->id]);
 
-        return redirect()->route('admin.events.index')->with('success', "Event '{$event->nama_event}' sekarang aktif untuk semua user.");
+        return redirect()->route('admin.events.index')
+            ->with('success', "Event '{$event->nama_event}' sekarang aktif untuk tenant Anda.");
     }
 }
