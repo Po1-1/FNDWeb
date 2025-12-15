@@ -9,7 +9,6 @@
         </a>
     </div>
 
-    {{-- DAFTAR RIWAYAT DISTRIBUSI & BUKTI --}}
     <div class="card shadow-sm border-0 rounded-4">
         <div class="card-header bg-light fw-bold">
             Riwayat Distribusi & Upload Bukti
@@ -26,7 +25,6 @@
                     </div>
                     <div class="card-body">
                         <div class="row">
-                            {{-- Kolom untuk menampilkan bukti yang sudah ada --}}
                             <div class="col-md-8">
                                 <h6 class="fw-bold">Bukti Ter-upload:</h6>
                                 @if($distribusi->buktis->isEmpty())
@@ -38,7 +36,6 @@
                                                 <a href="{{ Storage::url($bukti->image_path) }}" target="_blank">
                                                     <img src="{{ Storage::url($bukti->image_path) }}" alt="Bukti" class="img-thumbnail" style="width: 150px; height: 100px; object-fit: cover;">
                                                 </a>
-                                                {{-- Tombol Hapus --}}
                                                 <form action="{{ route('mentor.kelompok.bukti.destroy', $bukti) }}" method="POST" onsubmit="return confirm('Yakin ingin menghapus bukti ini?');">
                                                     @csrf
                                                     @method('DELETE')
@@ -52,7 +49,6 @@
                                 @endif
                             </div>
 
-                            {{-- Kolom untuk form upload --}}
                             <div class="col-md-4 border-start">
                                 <h6 class="fw-bold">Upload Bukti Baru</h6>
                                 <form action="{{ route('mentor.kelompok.bukti.store') }}" method="POST" enctype="multipart/form-data">

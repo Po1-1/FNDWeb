@@ -1,5 +1,4 @@
 <x-guest-layout>
-    <!-- Hero Section -->
     <div class="container py-5">
         <div class="row justify-content-center text-center">
             <div class="col-lg-8">
@@ -26,7 +25,6 @@
             </div>
         </div>
 
-        <!-- Fitur Unggulan (Tetap ditampilkan sebagai info) -->
         <div class="row g-4 py-4">
             <div class="col-md-4">
                 <div class="card h-100 border-0 bg-white shadow-sm p-3 text-center hover-effect">

@@ -16,11 +16,7 @@ return new class extends Migration
             $table->foreignId('inventaris_logistik_id')->constrained('inventaris_logistiks');
             $table->foreignId('user_id')->constrained('users'); // User yang mencatat
             $table->integer('jumlah_digunakan');
-            
-            // --- KONSOLIDASI ---
-            $table->text('catatan')->nullable(); // (cth: "2 galon pecah")
-            // -------------------
-
+            $table->text('catatan')->nullable(); 
             $table->date('tanggal_penggunaan');
             $table->timestamps();
         });

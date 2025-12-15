@@ -12,7 +12,6 @@ class Kelompok extends Model
     protected $fillable = [
         'event_id',
         'nama',
-        // 'vendor_id' sudah tidak ada lagi
     ];
 
     public function event()
@@ -30,7 +29,7 @@ class Kelompok extends Model
         return $this->hasMany(Distribusi::class);
     }
 
-    // Relasi Baru: Jadwal
+    // Relasi : Jadwal
     public function jadwal()
     {
         return $this->hasMany(JadwalKelompok::class);

@@ -1,6 +1,5 @@
 <nav class="navbar navbar-expand-lg sticky-top mb-4">
     <div class="container">
-        {{-- UBAH DI SINI: Link logo mengarah ke 'home' (halaman awal), bukan 'dashboard' --}}
         <a class="navbar-brand fw-bold text-primary" href="{{ route('home') }}">
             FNDWeb
         </a>
@@ -11,19 +10,19 @@
         <div class="collapse navbar-collapse" id="appNavbar">
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                 @if (Auth::user()->role == 'admin')
-                    {{-- Tampilkan menu ini HANYA JIKA event sudah dipilih --}}
+                    {{-- Tampilkanini ketika event dipilih --}}
                     @if (session('active_event_id'))
                         <li class="nav-item">
                             <a class="nav-link" href="{{ route('admin.dashboard') }}">Dashboard</a>
                         </li>
                     @endif
 
-                    {{-- Menu Event selalu tampil untuk Admin --}}
+                    {{-- Menu Event selalu untuk Admin --}}
                     <li class="nav-item">
                         <a class="nav-link" href="{{ route('admin.events.index') }}">Events</a>
                     </li>
 
-                    {{-- Tampilkan semua menu data master HANYA JIKA event sudah dipilih --}}
+                    {{-- Tampilkan semua menu data master jika event sudah dipilih --}}
                     @if (session('active_event_id'))
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">Data Master</a>
@@ -56,7 +55,7 @@
             </ul>
 
             <ul class="navbar-nav ms-auto">
-                {{-- TAMPILKAN EVENT AKTIF DI SINI --}}
+                {{-- tampil event aktif  --}}
                 @if (isset($activeEvent))
                     <li class="nav-item me-3 d-flex align-items-center">
                         <div class="d-flex align-items-center gap-2 text-nowrap bg-white px-3 py-2 rounded-pill border shadow-sm">

@@ -28,9 +28,6 @@ class KelompokController extends Controller
         return view('admin.kelompok.index', compact('kelompoks'));
     }
 
-    /**
-     * Menampilkan form untuk membuat kelompok baru.
-     */
     public function create()
     {
         $activeEventId = session('active_event_id');
@@ -38,9 +35,6 @@ class KelompokController extends Controller
         return view('admin.kelompok.create', compact('vendors'));
     }
 
-    /**
-     * Menyimpan kelompok baru ke database.
-     */
     public function store(Request $request)
     {
         $activeEventId = session('active_event_id');
@@ -65,9 +59,6 @@ class KelompokController extends Controller
         return redirect()->route('admin.kelompok.index')->with('success', 'Kelompok berhasil ditambahkan.');
     }
 
-    /**
-     * Menampilkan form untuk mengedit kelompok, jadwal, dan anggotanya.
-     */
     public function edit(Kelompok $kelompok)
     {
         $activeEventId = session('active_event_id');
@@ -84,9 +75,6 @@ class KelompokController extends Controller
         return view('admin.kelompok.edit', compact('kelompok', 'totalHari', 'vendors'));
     }
 
-    /**
-     * Menyimpan perubahan pada kelompok, jadwal, dan override mahasiswa.
-     */
     public function update(Request $request, Kelompok $kelompok)
     {
         $activeEventId = session('active_event_id');
@@ -124,9 +112,6 @@ class KelompokController extends Controller
         return redirect()->back()->with('success', 'Data kelompok, jadwal, dan override mahasiswa berhasil diperbarui.');
     }
 
-    /**
-     * Menghapus kelompok.
-     */
     public function destroy(Kelompok $kelompok)
     {
         if ($kelompok->event_id != session('active_event_id')) {

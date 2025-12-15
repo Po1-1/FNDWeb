@@ -31,8 +31,7 @@ class MahasiswaController extends Controller
 
             ->with(['kelompok', 'alergi'])
 
-            // 💡 FIX 1: PENCEGAHAN DUPLIKASI QUERY
-            // Pilih kolom spesifik dan paksa hasil unik berdasarkan ID Mahasiswa.
+            // PENCEGAHAN DUPLIKASI QUERY
             ->select('mahasiswas.*')
             ->distinct('mahasiswas.id')
 
@@ -42,8 +41,7 @@ class MahasiswaController extends Controller
                     $subQ->where('nama', 'LIKE', "%{$search}%")
                         ->orWhere('nim', 'LIKE', "%{$search}%")
 
-                        // FIX 2: BATASI PENCARIAN KELOMPOK HANYA PADA EVENT AKTIF
-                        // Mencegah Mahasiswa dari Event lain muncul
+                        // BATASI PENCARIAN KELOMPOK HANYA PADA EVENT AKTIF
                         ->orWhereHas('kelompok', function ($kelompokQuery) use ($search, $activeEventId) {
                             $kelompokQuery
                                 ->where('nama', 'LIKE', "%{$search}%")
@@ -58,23 +56,14 @@ class MahasiswaController extends Controller
         return view('admin.mahasiswa.index', compact('mahasiswas'));
     }
 
-    /**
-     * Menampilkan form untuk membuat mahasiswa baru
-     */
     public function create()
     {
         $activeEventId = session('active_event_id');
-        // Ambil kelompok dan alergi yang termasuk dalam event aktif saja
         $kelompoks = Kelompok::where('event_id', $activeEventId)->orderBy('nama')->get();
-        // Ambil alergi berdasarkan tenant (bukan event)
         $alergis = Alergi::where('tenant_id', Auth::user()->tenant_id)->orderBy('nama')->get();
 
         return view('admin.mahasiswa.create', compact('kelompoks', 'alergis'));
     }
-
-    /**
-     * Menyimpan mahasiswa baru
-     */
     public function store(Request $request)
     {
         $activeEventId = session('active_event_id');
@@ -98,7 +87,7 @@ class MahasiswaController extends Controller
 
         $dataMahasiswa = $request->except('alergis');
         $dataMahasiswa['is_vegan'] = $request->has('is_vegan');
-        $dataMahasiswa['event_id'] = $activeEventId; // <-- TAMBAHKAN EVENT ID
+        $dataMahasiswa['event_id'] = $activeEventId;
 
         $mahasiswa = new Mahasiswa($dataMahasiswa);
         $mahasiswa->save();
@@ -109,46 +98,31 @@ class MahasiswaController extends Controller
             ->with('success', 'Data mahasiswa berhasil ditambahkan.');
     }
 
-    /**
-     * Menampilkan detail satu mahasiswa
-     */
     public function show(Mahasiswa $mahasiswa)
     {
         $mahasiswa->load('alergi', 'kelompok.vendor');
         return view('admin.mahasiswa.show', compact('mahasiswa'));
     }
 
-    /**
-     * Menampilkan form untuk mengedit mahasiswa
-     */
     public function edit(Mahasiswa $mahasiswa)
     {
         $activeEventId = session('active_event_id');
-        // Pastikan mahasiswa ini dari event yang benar
         if ($mahasiswa->event_id != $activeEventId) {
             abort(404);
         }
 
         $kelompoks = Kelompok::where('event_id', $activeEventId)->orderBy('nama')->get();
-        // Ambil alergi berdasarkan tenant (bukan event)
         $alergis = Alergi::where('tenant_id', Auth::user()->tenant_id)->orderBy('nama')->get();
 
-        // Pastikan relasi alergi ter-load
         $mahasiswa->load('alergi');
-
-        // Siapkan array id alergi agar view tidak error
         $mahasiswaAlergiIds = $mahasiswa->alergi->pluck('id')->toArray();
 
         return view('admin.mahasiswa.edit', compact('mahasiswa', 'kelompoks', 'alergis', 'mahasiswaAlergiIds'));
     }
 
-    /**
-     * Update data mahasiswa
-     */
     public function update(Request $request, Mahasiswa $mahasiswa)
     {
         $activeEventId = session('active_event_id');
-        // Pastikan mahasiswa ini dari event yang benar
         if ($mahasiswa->event_id != $activeEventId) {
             abort(404);
         }
@@ -179,13 +153,9 @@ class MahasiswaController extends Controller
         return redirect()->route('admin.mahasiswa.index')
             ->with('success', 'Data mahasiswa berhasil diperbarui.');
     }
-
-    /**
-     * Menghapus SATU data mahasiswa
-     */
     public function destroy(Mahasiswa $mahasiswa)
     {
-        // Hapus relasi detail distribusi dulu jika ada (manual cascade)
+        // Hapus relasi detail distribusi dulu jika ada 
         DB::table('distribusi_details')->where('mahasiswa_id', $mahasiswa->id)->delete();
 
         $mahasiswa->delete();
@@ -193,12 +163,9 @@ class MahasiswaController extends Controller
             ->with('success', 'Data mahasiswa berhasil dihapus.');
     }
 
-    /**
-     * Menghapus SEMUA mahasiswa KECUALI Panitia (Fitur Reset)
-     */
     public function destroyAll()
     {
-        // 1. Ambil Daftar ID Mahasiswa yang BUKAN Panitia
+        // Ambil Daftar ID Mahasiswa yang BUKAN Panitia
         $idsToDelete = Mahasiswa::where('prodi', '!=', 'Panitia')->pluck('id');
 
         if ($idsToDelete->isEmpty()) {
@@ -206,37 +173,27 @@ class MahasiswaController extends Controller
                 ->with('error', 'Tidak ada data mahasiswa biasa untuk dihapus.');
         }
 
-        // 2. Hapus Data Relasi Terlebih Dahulu (Manual Cascade) untuk menghindari error Foreign Key
 
-        // A. Hapus data di Pivot Alergi
+        // Hapus data di Pivot Alergi
         DB::table('mahasiswa_alergi')
             ->whereIn('mahasiswa_id', $idsToDelete)
             ->delete();
 
-        // B. Hapus data di Detail Distribusi (Riwayat Makan/Checklist Kasir)
-        // Ini wajib dihapus karena tabel ini punya foreign key ke mahasiswas
+        // Hapus data di Detail Distribusi 
         DB::table('distribusi_details')
             ->whereIn('mahasiswa_id', $idsToDelete)
             ->delete();
 
-        // 3. Setelah bersih, baru hapus Mahasiswanya
+        // Setelah bersih, baru hapus Mahasiswanya
         $deletedCount = Mahasiswa::whereIn('id', $idsToDelete)->delete();
 
         return redirect()->route('admin.mahasiswa.index')
             ->with('success', "Berhasil mereset {$deletedCount} data mahasiswa. Data Panitia Inti aman.");
     }
-
-    /**
-     * Menampilkan form import
-     */
     public function showImportForm()
     {
         return view('admin.mahasiswa.import');
     }
-
-    /**
-     * Proses import Excel
-     */
     public function import(Request $request)
     {
         set_time_limit(500);
@@ -246,7 +203,6 @@ class MahasiswaController extends Controller
         ]);
 
         try {
-            // Ganti dari import() menjadi queueImport()
             Excel::queueImport(new MahasiswaImport, $request->file('file'));
 
             return redirect()->route('admin.mahasiswa.index')

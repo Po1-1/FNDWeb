@@ -10,7 +10,7 @@ class InventarisLogistik extends Model
     use HasFactory;
 
     protected $fillable = [
-        'event_id', // Tambahkan ini
+        'event_id', 
         'nama_item',
         'stok_awal',
         'satuan',

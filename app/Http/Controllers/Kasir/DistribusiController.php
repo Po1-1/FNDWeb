@@ -12,7 +12,7 @@ use App\Models\Event;
 use App\Models\Kelompok;
 use App\Models\Mahasiswa;
 use Carbon\Carbon;
-use Illuminate\Validation\Rule; // <-- Tambahkan ini
+use Illuminate\Validation\Rule; 
 
 class DistribusiController extends Controller
 {
@@ -23,13 +23,6 @@ class DistribusiController extends Controller
             ->firstOrFail();
     }
 
-    // 1. Method Catat Makanan Lama -> DIHAPUS/DIGANTI dengan alur Checklist
-    // Kita ganti dashboard logic di KasirDashboardController untuk redirect ke sini
-
-    // 2. Halaman Form Checklist (Langkah 1: Pilih Hari/Kelompok)
-    // (Logic ini dipindahkan ke View Dashboard Kasir langsung, lihat View di bawah)
-
-    // 3. Tampilkan Data Anak (Langkah 2) - Dipanggil dari Form Dashboard
     public function loadChecklist(Request $request)
     {
         $request->validate([
@@ -54,23 +47,23 @@ class DistribusiController extends Controller
         return view('kasir.distribusi.checklist', compact('kelompok', 'hariKe', 'waktuMakan', 'vendorKelompok'));
     }
 
-    // 4. Simpan Transaksi Makanan (Langkah 3)
+    // Simpan Transaksi Makanan 
     public function storeChecklist(Request $request)
     {
         $activeEvent = $this->getActiveEvent();
 
         $distribusi = Distribusi::create([
             'event_id' => $activeEvent->id,
-            'user_id' => Auth::id(), // <-- Perbaikan di sini
+            'user_id' => Auth::id(),
             'kelompok_id' => $request->kelompok_id,
             'tipe' => 'makanan',
             'hari_ke' => $request->hari_ke,
             'waktu_makan' => $request->waktu_makan,
             'catatan' => $request->catatan,
-            'jumlah_pengambilan' => count($request->hadir ?? []), // Hitung yg dicentang
+            'jumlah_pengambilan' => count($request->hadir ?? []),
         ]);
 
-        // B. Simpan Detail per Mahasiswa (Snapshot Vendor)
+        //Simpan Detail per Mahasiswa (Snapshot Vendor)
         if ($request->has('hadir')) {
             foreach ($request->hadir as $mhsId) {
                 $mhs = Mahasiswa::find($mhsId);
@@ -92,7 +85,7 @@ class DistribusiController extends Controller
         return redirect()->route('kasir.dashboard')->with('success', 'Data Makan berhasil disimpan.');
     }
 
-    // 5. Catat Logistik (Tetap)
+    //Catat Logistik 
     public function catatLogistik(Request $request)
     {
         $activeEvent = $this->getActiveEvent();
@@ -104,7 +97,7 @@ class DistribusiController extends Controller
 
         LogPenggunaanLogistik::create([
             'inventaris_logistik_id' => $request->inventaris_logistik_id,
-            'user_id' => Auth::id(), // <-- Perbaikan di sini
+            'user_id' => Auth::id(),
             'jumlah_digunakan' => $request->jumlah_digunakan,
             'tanggal_penggunaan' => now(),
             'catatan' => $request->catatan,

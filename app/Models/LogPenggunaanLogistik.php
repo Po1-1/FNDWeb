@@ -14,14 +14,9 @@ class LogPenggunaanLogistik extends Model
         'user_id',
         'jumlah_digunakan',
         'tanggal_penggunaan',
-        'catatan', // <-- TAMBAHKAN INI
+        'catatan',
     ];
 
-    /**
-     * The attributes that should be cast.
-     *
-     * @var array
-     */
     protected $casts = [
         'tanggal_penggunaan' => 'date',
     ];

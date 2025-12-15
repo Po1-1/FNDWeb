@@ -69,7 +69,7 @@ class MahasiswaImport implements ToModel, WithHeadingRow, WithValidation, Should
             'nama'        => $row['nama'],
             'prodi'       => $row['prodi'] ?? null,
             'kelompok_id' => $kelompok->id,
-            'no_urut'     => $row['no'], // Ambil dari kolom 'no'
+            'no_urut'     => $row['no'], 
             'is_vegan'    => $isVegan,
             'user_id'     => $userId,
         ]);
@@ -84,7 +84,7 @@ class MahasiswaImport implements ToModel, WithHeadingRow, WithValidation, Should
             'nama' => 'required|string|max:255',
             'prodi' => 'nullable|string',
             'kelompok' => 'required|string',
-            'no' => 'required|integer', // Ubah 'no_urut' menjadi 'no'
+            'no' => 'required|integer', 
             'is_vegan' => 'nullable',
         ];
     }

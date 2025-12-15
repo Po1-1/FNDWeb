@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::table('events', function (Blueprint $table) {
             $table->foreignId('tenant_id')
-                ->nullable() // Kita buat nullable dulu untuk transisi
+                ->nullable()
                 ->after('id')
                 ->constrained('tenants')
                 ->onDelete('cascade');

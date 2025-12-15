@@ -4,13 +4,11 @@
             <h2 class="mb-0">Anggota Kelompok: {{ $kelompok->nama }}</h2>
             <p class="text-muted mb-0">Berikut adalah daftar anggota kelompok binaan Anda.</p>
         </div>
-        {{-- TOMBOL BARU UNTUK KE HALAMAN MANAJEMEN --}}
         <a href="{{ route('mentor.kelompok.manage') }}" class="btn btn-primary">
             <i class="bi bi-camera-fill me-1"></i> Kelola Bukti Distribusi
         </a>
     </div>
 
-    {{-- DAFTAR ANGGOTA KELOMPOK --}}
     <div class="card shadow-sm border-0 rounded-4">
         <div class="card-header bg-light fw-bold">
             Daftar Anggota

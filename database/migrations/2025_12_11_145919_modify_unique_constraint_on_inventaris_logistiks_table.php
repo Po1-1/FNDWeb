@@ -12,10 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('inventaris_logistiks', function (Blueprint $table) {
-            // Hapus unique index yang lama
             $table->dropUnique('inventaris_logistiks_nama_item_unique');
-
-            // Tambahkan composite unique index yang baru
             $table->unique(['event_id', 'nama_item']);
         });
     }
@@ -26,10 +23,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('inventaris_logistiks', function (Blueprint $table) {
-            // Hapus composite unique index
             $table->dropUnique(['event_id', 'nama_item']);
-
-            // Kembalikan unique index yang lama
             $table->unique('nama_item');
         });
     }

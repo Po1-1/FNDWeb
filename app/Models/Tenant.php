@@ -13,9 +13,6 @@ class Tenant extends Model
         'name',
     ];
 
-    /**
-     * Relasi: Satu Tenant memiliki banyak User (admin, mentor, kasir).
-     */
     public function users()
     {
         return $this->hasMany(User::class);

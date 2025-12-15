@@ -11,12 +11,8 @@
             <div class="card-body">
                 <div class="mb-3">
                     <label class="form-label fw-bold">Nama Kelompok</label>
-
-                    {{-- Tambahkan class @error dan value old() --}}
                     <input type="text" class="form-control @error('nama') is-invalid @enderror" name="nama"
                         value="{{ old('nama', $kelompok->nama) }}" required>
-
-                    {{-- Tambahkan blok ini untuk menampilkan pesan error --}}
                     @error('nama')
                         <div class="invalid-feedback">
                             Nama kelompok ini sudah digunakan, silakan pilih nama lain.

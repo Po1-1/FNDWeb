@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\InventarisLogistik;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule; // <-- Tambahkan ini
+use Illuminate\Validation\Rule;
 
 class InventarisLogistikController extends Controller
 {
@@ -56,7 +56,6 @@ class InventarisLogistikController extends Controller
         if ($logistik->event_id != session('active_event_id')) {
             abort(404);
         }
-        // Eager load relasi log penggunaan
         $logistik->load('logPenggunaan');
         return view('admin.logistik.show', compact('logistik'));
     }

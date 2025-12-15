@@ -15,7 +15,7 @@ return new class extends Migration
 
             // Data input manual Admin
             $table->integer('sisa_galon')->default(0);
-            $table->text('catatan_harian')->nullable(); // Catatan summary dari Admin
+            $table->text('catatan_harian')->nullable(); 
 
             // Data snapshot (Dinamis)
             $table->json('rekap_penggunaan_logistik')->nullable();

@@ -15,7 +15,6 @@ class UserController extends Controller
     public function index()
     {
         // Ambil user yang berada di tenant yang sama dengan admin yang login
-        // dan bukan developer.
         $users = User::where('tenant_id', Auth::user()->tenant_id)
             ->where('role', '!=', 'developer')
             ->orderBy('name')
@@ -35,11 +34,11 @@ class UserController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
-            'role' => ['required', Rule::in(['mentor', 'kasir'])], // Hanya boleh mentor atau kasir
+            'role' => ['required', Rule::in(['mentor', 'kasir'])],
         ]);
 
         User::create([
-            'tenant_id' => Auth::user()->tenant_id, // Otomatis set tenant_id
+            'tenant_id' => Auth::user()->tenant_id, 
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
@@ -52,7 +51,7 @@ class UserController extends Controller
 
     public function edit(User $user)
     {
-        // Pastikan admin tidak bisa mengedit user dari tenant lain
+        // cek admin tidak bisa mengedit user dari tenant lain
         if ($user->tenant_id !== Auth::user()->tenant_id) {
             abort(403);
         }
@@ -61,7 +60,7 @@ class UserController extends Controller
 
     public function update(Request $request, User $user)
     {
-        // Pastikan admin tidak bisa mengedit user dari tenant lain
+        // cek admin tidak bisa mengedit user dari tenant lain
         if ($user->tenant_id !== Auth::user()->tenant_id) {
             abort(403);
         }
@@ -88,12 +87,12 @@ class UserController extends Controller
 
     public function destroy(User $user)
     {
-        // Pastikan admin tidak bisa menghapus user dari tenant lain
+        //  admin tidak bisa menghapus user dari tenant lain
         if ($user->tenant_id !== Auth::user()->tenant_id) {
             abort(403);
         }
 
-        // Tambahan: Jangan biarkan admin menghapus dirinya sendiri
+        // admin tidak bisa menghapus dirinya sendiri
         if ($user->id === Auth::id()) {
             return redirect()->route('admin.users.index')->with('error', 'Anda tidak dapat menghapus akun Anda sendiri.');
         }

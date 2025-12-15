@@ -8,7 +8,7 @@ use App\Models\Mahasiswa;
 use App\Models\EventSummary;
 use App\Models\Vendor;
 use App\Models\InventarisLogistik;
-use App\Models\Event; // <-- Tambahkan ini
+use App\Models\Event;
 
 class AdminDashboardController extends Controller
 {
@@ -18,7 +18,7 @@ class AdminDashboardController extends Controller
     public function index()
     {
         $activeEventId = session('active_event_id');
-        $activeEvent = Event::find($activeEventId); // <-- Ambil data event aktif
+        $activeEvent = Event::find($activeEventId); // Ambil data event aktif
 
         // Ambil data statistik yang terikat pada event aktif
         $totalMahasiswa = Mahasiswa::where('event_id', $activeEventId)->count();
@@ -29,7 +29,6 @@ class AdminDashboardController extends Controller
                                 ->orderBy('tanggal_summary', 'desc')
                                 ->first();
 
-        // --- INI PERBAIKANNYA ---
         // Jika tidak ada summary, coba cari stok awal galon dari data master logistik.
         if (!$summary) {
             $galonLogistik = InventarisLogistik::where('event_id', $activeEventId)

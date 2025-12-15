@@ -17,13 +17,11 @@ return new class extends Migration
             $table->string('nama');
             $table->string('prodi');
 
-            // --- KONSOLIDASI ---
             // 'kelompok' dan 'set_vendor' diganti 'kelompok_id'
             $table->foreignId('kelompok_id')
                   ->nullable()
                   ->constrained('kelompoks')
                   ->onDelete('set null');
-            // -------------------
 
             $table->integer('no_urut');
             $table->boolean('is_vegan')->default(false);

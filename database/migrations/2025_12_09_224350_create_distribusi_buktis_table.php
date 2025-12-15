@@ -13,7 +13,6 @@ return new class extends Migration
     {
         Schema::create('distribusi_buktis', function (Blueprint $table) {
             $table->id();
-            // Relasi ke header transaksi distribusi
             $table->foreignId('distribusi_id')->constrained('distribusis')->onDelete('cascade');
             $table->string('image_path');
             $table->text('catatan')->nullable(); // Catatan dari mentor

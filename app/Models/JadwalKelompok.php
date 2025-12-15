@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class JadwalKelompok extends Model
 {
-    protected $guarded = []; // Allow all
+    protected $guarded = []; 
 
     public function vendor()
     {

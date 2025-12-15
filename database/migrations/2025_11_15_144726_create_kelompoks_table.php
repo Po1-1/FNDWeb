@@ -14,13 +14,10 @@ return new class extends Migration
         Schema::create('kelompoks', function (Blueprint $table) {
             $table->id();
             $table->string('nama')->unique();
-
-            // --- PASTIKAN BAGIAN INI ADA ---
             $table->foreignId('vendor_id')
                 ->nullable() // Boleh kosong saat import
                 ->constrained('vendors')
                 ->onDelete('set null');
-            // -----------------------------
 
             $table->timestamps();
         });

@@ -12,18 +12,10 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('alergis', function (Blueprint $table) {
-            // 1. Hapus composite index yang lama terlebih dahulu
-            // Index ini menggunakan kolom event_id dan nama
             $table->dropUnique(['event_id', 'nama']);
-
-            // 2. Hapus foreign key dan kolom event_id
             $table->dropForeign(['event_id']);
             $table->dropColumn('event_id');
-
-            // 3. Tambahkan kolom tenant_id yang baru
             $table->foreignId('tenant_id')->nullable()->after('id')->constrained('tenants')->onDelete('cascade');
-            
-            // 4. Buat composite index yang baru menggunakan tenant_id dan nama
             $table->unique(['tenant_id', 'nama']);
         });
     }
@@ -34,7 +26,6 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('alergis', function (Blueprint $table) {
-            // Urutan dibalik untuk rollback
             $table->dropUnique(['tenant_id', 'nama']);
             $table->dropForeign(['tenant_id']);
             $table->dropColumn('tenant_id');

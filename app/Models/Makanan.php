@@ -10,13 +10,13 @@ class Makanan extends Model
     use HasFactory;
 
     protected $fillable = [
-        'event_id', // Tambahkan ini
+        'event_id', 
         'vendor_id',
         'nama_menu',
         'deskripsi',
         'bahan',
         'is_vegan',
-        'image_path', // <-- Tambahkan ini
+        'image_path',
     ];
 
     public function event()

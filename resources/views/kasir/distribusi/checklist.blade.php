@@ -43,7 +43,7 @@
                         <tbody>
                             @foreach($kelompok->mahasiswas as $mhs)
                             @php
-                                // Ambil vendor anak ini untuk hari/waktu ini
+                                // ambil vendor anak ini untuk hari/waktu ini
                                 $vendorAnak = $mhs->getVendorFor($hariKe, $waktuMakan);
                                 $isCustom = $mhs->custom_vendor_id ? true : false;
                             @endphp
@@ -81,7 +81,7 @@
     </form>
 
     <script>
-        // Script simpel untuk Check All / Uncheck All
+        //  untuk Check All / Uncheck All
         document.getElementById('checkAll').addEventListener('click', function() {
             var checkboxes = document.querySelectorAll('.chk-mhs');
             for (var checkbox of checkboxes) {

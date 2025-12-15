@@ -16,7 +16,7 @@ return new class extends Migration
         foreach ($tables as $tableName) {
             Schema::table($tableName, function (Blueprint $table) {
                 $table->foreignId('event_id')
-                    ->nullable() // Nullable untuk transisi, nanti bisa diubah
+                    ->nullable() 
                     ->after('id')
                     ->constrained('events')
                     ->onDelete('cascade');

@@ -6,7 +6,7 @@
         </div>
     </div>
 
-    {{-- BAGIAN PENCARIAN MAHASISWA --}}
+    {{-- PENCARIAN MAHASISWA --}}
     <h4 class="fw-bold text-dark mb-3">Pencarian Global</h4>
     <div class="card border-0 shadow-sm rounded-4 mb-4 bg-white">
         <div class="card-body p-4">
@@ -22,7 +22,7 @@
         </div>
     </div>
 
-    <!-- HASIL PENCARIAN (SEKARANG MENJADI DAFTAR UTAMA) -->
+    <!-- HASIL PENCARIAN  -->
     <div class="card shadow-sm border-0 rounded-4 overflow-hidden">
         <div class="card-body p-0">
             @if ($results->isEmpty())

@@ -7,18 +7,14 @@
         <div class="col-md-4 text-md-end">
             <div class="d-inline-block bg-white px-4 py-2 rounded-pill shadow-sm border">
                 <i class="bi bi-calendar-check text-primary me-2"></i>
-                {{-- Gunakan tanggal mulai event jika ada, jika tidak, gunakan tanggal hari ini --}}
                 <span class="fw-bold text-dark">{{ $activeEvent ? $activeEvent->tanggal_mulai->translatedFormat('l, d F Y') : now()->translatedFormat('l, d F Y') }}</span>
             </div>
         </div>
     </div>
 
-    <!-- Statistik Utama -->
     <div class="row g-4 mb-5">
-        <!-- Card Mahasiswa -->
         <div class="col-md-4">
             <div class="card h-100 border-0 bg-primary bg-gradient text-white shadow-lg position-relative overflow-hidden">
-                <!-- Dekorasi Background -->
                 <div class="position-absolute top-0 end-0 opacity-25 translate-middle-y me-n3 mt-n3">
                     <i class="bi bi-people-fill" style="font-size: 8rem;"></i>
                 </div>

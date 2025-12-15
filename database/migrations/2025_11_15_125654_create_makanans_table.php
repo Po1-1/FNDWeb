@@ -16,7 +16,7 @@ return new class extends Migration
             $table->foreignId('vendor_id')->constrained('vendors')->onDelete('cascade');
             $table->string('nama_menu');
             $table->text('deskripsi');
-            $table->text('bahan'); // Untuk pencocokan alergi
+            $table->text('bahan'); 
             $table->boolean('is_vegan')->default(false);
             $table->timestamps();
         });

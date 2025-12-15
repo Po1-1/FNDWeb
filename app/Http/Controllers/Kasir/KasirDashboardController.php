@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Auth;
 
 class KasirDashboardController extends Controller
 {
-    // Menampilkan halaman utama Kasir (untuk scan/input kelompok)
+    // Menampilkan halaman utama Kasir 
     public function index()
     {
         // Cari event yang aktif untuk tenant user ini
@@ -27,7 +27,7 @@ class KasirDashboardController extends Controller
         $kelompoks = Kelompok::where('event_id', $activeEvent->id)->orderBy('nama')->get();
         $logistiks = InventarisLogistik::where('event_id', $activeEvent->id)->orderBy('nama_item')->get();
         
-        // View ini akan berisi form untuk mencatat distribusi
+        // mencatat distribusi
         return view('kasir.dashboard', compact('kelompoks', 'logistiks', 'activeEvent'));
     }
 }

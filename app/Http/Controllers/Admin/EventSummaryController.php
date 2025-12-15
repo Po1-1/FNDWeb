@@ -28,13 +28,8 @@ class EventSummaryController extends Controller
         return view('admin.summary.index', compact('summaries', 'events', 'selectedEventId'));
     }
 
-    /**
-     * Menampilkan detail satu summary.
-     * INI ADALAH PERBAIKAN UTAMA.
-     */
     public function show(EventSummary $summary)
     {
-        // Pastikan summary ini milik event yang ada di tenant user
         if ($summary->event->tenant_id !== auth()->user()->tenant_id) {
             abort(403);
         }
@@ -54,7 +49,6 @@ class EventSummaryController extends Controller
 
         $logistikNotes = LogPenggunaanLogistik::whereDate('tanggal_penggunaan', $tanggal)->whereNotNull('catatan')->get();
 
-        // Note: Makanan notes diambil dari header
         $makananNotes = Distribusi::whereDate('created_at', $tanggal)->whereNotNull('catatan')->with('kelompok:id,nama')->get();
 
         $rekapLogistik = LogPenggunaanLogistik::with('inventarisLogistik:id,nama_item,satuan')
@@ -84,9 +78,8 @@ class EventSummaryController extends Controller
 
         $tanggal = Carbon::parse($request->tanggal_summary);
 
-        // --- MULAI PERBAIKAN: Tambahkan semua kalkulasi di sini ---
 
-        // 1. Kalkulasi Rekap Penggunaan Logistik
+        // Kalkulasi Rekap Penggunaan Logistik
         $rekapLogistik = LogPenggunaanLogistik::whereDate('tanggal_penggunaan', $tanggal)
             ->join('inventaris_logistiks', 'log_penggunaan_logistiks.inventaris_logistik_id', '=', 'inventaris_logistiks.id')
             ->where('inventaris_logistiks.event_id', $request->event_id)
@@ -111,7 +104,6 @@ class EventSummaryController extends Controller
         $vendorRekap = $rekapQuery->get()->toArray();
         $makananRekap = $rekapQuery->get()->toArray(); // Untuk snapshot, data vendor dan makanan sama
 
-        // --- SELESAI PERBAIKAN ---
 
         $summary = EventSummary::updateOrCreate([
             'event_id' => $request->event_id,

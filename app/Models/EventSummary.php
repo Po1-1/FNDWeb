@@ -16,15 +16,10 @@ class EventSummary extends Model
         'sisa_galon',
         'rekap_penggunaan_logistik',
         'vendor_bertugas_hari_ini',
-        'rekap_penggunaan_makanan', // <-- BARU
+        'rekap_penggunaan_makanan', 
         'catatan_harian',
     ];
 
-    /**
-     * The attributes that should be cast.
-     *
-     * @var array
-     */
     protected $casts = [
         'tanggal_summary' => 'date',
         'rekap_penggunaan_logistik' => 'array',

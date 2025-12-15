@@ -10,7 +10,7 @@ class Vendor extends Model
     use HasFactory;
 
     protected $fillable = [
-        'event_id', // Tambahkan ini
+        'event_id', 
         'nama_vendor',
         'kontak',
     ];

@@ -22,21 +22,14 @@ class TenantController extends Controller
         return view('developer.tenants.index', compact('tenants'));
     }
 
-    /**
-     * Menampilkan form untuk membuat tenant baru.
-     */
     public function create()
     {
         return view('developer.tenants.create');
     }
 
-    /**
-     * Menyimpan tenant baru dan admin pertamanya.
-     */
     public function store(Request $request)
     {
         $request->validate([
-            // 💡 FIX: Tambahkan validasi unique:tenants,name untuk mencegah domain slug yang sama
             'tenant_name' => 'required|string|max:255|unique:tenants,name', 
             'admin_name' => 'required|string|max:255',
             'admin_email' => 'required|email|unique:users,email',
@@ -45,13 +38,13 @@ class TenantController extends Controller
 
         try {
             DB::transaction(function () use ($request) {
-                // 1. Buat Tenant
+                // Buat Tenant
                 $tenant = Tenant::create([
                     'name' => $request->tenant_name,
                     'domain' => Str::slug($request->tenant_name), // e.g., 'FND 2025' -> 'fnd-2025'
                 ]);
 
-                // 2. Buat User Admin untuk tenant tersebut
+                // Buat User Admin untuk tenant tersebut
                 User::create([
                     'tenant_id' => $tenant->id,
                     'name' => $request->admin_name,

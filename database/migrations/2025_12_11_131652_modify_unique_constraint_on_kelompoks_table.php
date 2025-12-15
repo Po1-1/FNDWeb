@@ -12,10 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('kelompoks', function (Blueprint $table) {
-            // 1. Hapus unique index yang lama pada kolom 'nama' saja
             $table->dropUnique('kelompoks_nama_unique');
-
-            // 2. Tambahkan composite unique index baru
             $table->unique(['event_id', 'nama']);
         });
     }
@@ -26,10 +23,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('kelompoks', function (Blueprint $table) {
-            // 1. Hapus composite unique index yang baru
             $table->dropUnique(['event_id', 'nama']);
-
-            // 2. Kembalikan unique index yang lama
             $table->unique('nama');
         });
     }

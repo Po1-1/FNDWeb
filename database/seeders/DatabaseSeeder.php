@@ -29,7 +29,5 @@ class DatabaseSeeder extends Seeder
             MahasiswaSeeder::class,    // Butuh User (Mentor) & Alergi
         ]);
         
-        // Catatan: Seeder untuk Distribusi, Log, dan Summary
-        // biasanya tidak diisi data dummy, karena itu data transaksi harian.
     }
 }

@@ -18,7 +18,7 @@ class Mahasiswa extends Model
         'no_urut',
         'is_vegan',
         'user_id',
-        'custom_vendor_id', // Baru
+        'custom_vendor_id', 
     ];
 
     public function event()
@@ -47,15 +47,15 @@ class Mahasiswa extends Model
         return $this->belongsTo(Vendor::class, 'custom_vendor_id');
     }
 
-    // Logika Penentuan Vendor (Penting!)
+    // Logika Penentuan Vendor 
     public function getVendorFor($hari, $waktu)
     {
-        // Prioritas 1: Cek apakah mahasiswa ini punya override vendor khusus.
+        // Cek apakah mahasiswa ini punya override vendor khusus.
         if ($this->custom_vendor_id) {
             return $this->customVendor;
         }
 
-        // Prioritas 2 (Fallback): Gunakan jadwal default dari kelompoknya.
+        // Menggunakan jadwal default dari kelompoknya.
         if ($this->kelompok) {
             return $this->kelompok->getVendorOn($hari, $waktu);
         }

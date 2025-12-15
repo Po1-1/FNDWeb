@@ -2,9 +2,9 @@
 
 use Illuminate\Support\Facades\Route;
 
-// Import Middleware Kustom
+// Import Middleware
 use App\Http\Middleware\EnsureUserHasRole;
-use App\Http\Middleware\EnsureEventIsSelected; // <-- Tambahkan ini
+use App\Http\Middleware\EnsureEventIsSelected;
 
 // Import Controller
 use App\Http\Controllers\ProfileController;
@@ -23,33 +23,25 @@ use App\Http\Controllers\Kasir\KasirDashboardController;
 use App\Http\Controllers\Kasir\DistribusiController;
 use App\Http\Controllers\Mentor\MentorDashboardController;
 use App\Http\Controllers\Admin\KelompokController;
-use App\Http\Controllers\Developer\TenantController; // <-- Tambahkan ini
+use App\Http\Controllers\Developer\TenantController; 
 
 /*
-|--------------------------------------------------------------------------
-| Rute Publik (Guest)
-|--------------------------------------------------------------------------
-| Rute ini bisa diakses siapa saja, bahkan yang belum login.
+Rute Publik (Guest)
 */
 
 Route::get('/', [GuestController::class, 'index'])->name('home');
 Route::get('/apa-itu-fnd', [GuestController::class, 'about'])->name('guest.about');
 
 /*
-|--------------------------------------------------------------------------
-| Rute Autentikasi (Breeze)
-|--------------------------------------------------------------------------
-| Ini menangani Login, Register, Logout, dll.
+Rute Autentikasi (Breeze)  Login, Register, Logout, dll.
 */
 require __DIR__ . '/auth.php';
 
 /*
-|--------------------------------------------------------------------------
-| Rute Pengguna Terautentikasi (Semua Role)
-|--------------------------------------------------------------------------
+ Rute Pengguna Terautentikasi (Semua Role)
 */
 Route::middleware('auth')->group(function () {
-    // Rute /dashboard akan otomatis mengarahkan berdasarkan role
+    // dashboard akan otomatis mengarahkan berdasarkan role
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     // Rute profile (bawaan Breeze)
@@ -59,9 +51,7 @@ Route::middleware('auth')->group(function () {
 });
 
 /*
-|--------------------------------------------------------------------------
-| Rute Khusus DEVELOPER
-|--------------------------------------------------------------------------
+Rute Khusus DEVELOPER
 */
 Route::middleware(['auth', 'role:developer'])
     ->prefix('developer')
@@ -72,13 +62,9 @@ Route::middleware(['auth', 'role:developer'])
 
 
 /*
-|--------------------------------------------------------------------------
-| Rute Khusus ADMIN (Struktur Final yang Sudah Diperbaiki)
-|--------------------------------------------------------------------------
+Rute Khusus ADMIN 
 */
 
-// SEMUA rute admin sekarang berada dalam SATU grup.
-// Middleware 'event.selected' akan menangani logika pengalihan.
 Route::middleware(['auth', 'role:admin', 'event.selected'])
     ->prefix('admin')
     ->name('admin.')
@@ -87,11 +73,11 @@ Route::middleware(['auth', 'role:admin', 'event.selected'])
         // Dashboard
         Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
 
-        // Manajemen Event (tetap di dalam grup yang sama)
+        // Manajemen Event 
         Route::resource('events', EventController::class)->except(['show']);
         Route::get('events/{event}/set-active', [EventController::class, 'setActive'])->name('events.setActive');
 
-        // Import & Reset Mahasiswa (PINDAHKAN KE SINI)
+        // Import & Reset Mahasiswa 
         Route::get('/mahasiswa/import', [MahasiswaController::class, 'showImportForm'])->name('mahasiswa.import.form');
         Route::post('/mahasiswa/import', [MahasiswaController::class, 'import'])->name('mahasiswa.import');
         Route::delete('/mahasiswa/destroy-all', [MahasiswaController::class, 'destroyAll'])->name('mahasiswa.destroyAll');
@@ -105,31 +91,24 @@ Route::middleware(['auth', 'role:admin', 'event.selected'])
         Route::resource('users', UserController::class);
         Route::resource('logistik', InventarisLogistikController::class)->names('logistik');
 
-        // Import & Reset Mahasiswa (HAPUS DARI SINI)
-
-        // Laporan / Summary
+        // Laporan
         Route::get('summaries/generate', [EventSummaryController::class, 'showGeneratorForm'])->name('summary.generate.form');
         Route::post('summaries/generate', [EventSummaryController::class, 'generateSnapshot'])->name('summary.generate.store');
         Route::resource('summaries', EventSummaryController::class)->only(['index', 'show']);
     });
 
 /*
-|--------------------------------------------------------------------------
-| Rute Role Lain (Mentor, Kasir)
-|--------------------------------------------------------------------------
+Rute Role Mentor, Kasir
 */
 Route::middleware(['auth', 'role:mentor'])
     ->prefix('mentor')
     ->name('mentor.')
     ->group(function () {
         Route::get('/dashboard', [MentorDashboardController::class, 'index'])->name('dashboard');
-        // Rute kelompok, manage, dan bukti dihapus karena fitur disederhanakan
     });
 
 /*
-|--------------------------------------------------------------------------
-| Rute Khusus KASIR
-|--------------------------------------------------------------------------
+Rute KASIR
 */
 Route::middleware(['auth', EnsureUserHasRole::class . ':kasir'])
     ->prefix('kasir')
@@ -139,17 +118,13 @@ Route::middleware(['auth', EnsureUserHasRole::class . ':kasir'])
         Route::get('/dashboard', [KasirDashboardController::class, 'index'])->name('dashboard');
 
         // Rute untuk mencatat distribusi
-        // Rute Distribusi Lama (Mungkin masih dipakai untuk logistik)
         Route::post('/distribusi/catat-logistik', [DistribusiController::class, 'catatLogistik'])->name('distribusi.logistik.store');
 
-        // === TAMBAHKAN 2 RUTE INI ===
-
-        // 1. Untuk menampilkan halaman checklist (Langkah 2)
+        // Untuk menampilkan halaman checklist (Langkah 2)
         Route::get('/distribusi/checklist', [DistribusiController::class, 'loadChecklist'])
             ->name('distribusi.checklist');
-        // Hasil nama akhir: kasir.distribusi.checklist
 
-        // 2. Untuk menyimpan data checklist (Langkah 3 - INI YANG ERROR)
+        // Untuk menyimpan data checklist (Langkah 3 - INI YANG ERROR)
         Route::post('/distribusi/store-checklist', [DistribusiController::class, 'storeChecklist'])
             ->name('distribusi.storeChecklist');
     });

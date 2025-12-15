@@ -2,22 +2,20 @@
 
 namespace App\Models;
 
-use App\Models\Traits\BelongsToTenant; // <-- Gunakan Trait ini
+use App\Models\Traits\BelongsToTenant; 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Alergi extends Model
 {
-    use HasFactory, BelongsToTenant; // <-- Terapkan Trait
+    use HasFactory, BelongsToTenant; 
 
     protected $fillable = [
-        'tenant_id', // <-- Ganti dari event_id
+        'tenant_id', 
         'nama',
         'deskripsi',
     ];
 
-    // Hapus relasi event(), ganti dengan tenant() dari Trait
-    // public function event() { ... }
 
     public function mahasiswa()
     {

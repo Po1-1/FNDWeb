@@ -14,8 +14,8 @@ class Distribusi extends Model
         'user_id',
         'kelompok_id',
         'tipe',
-        'hari_ke',      // Baru
-        'waktu_makan',  // Baru
+        'hari_ke',      
+        'waktu_makan',  
         'jumlah_pengambilan',
         'catatan',
     ];
@@ -41,7 +41,6 @@ class Distribusi extends Model
         return $this->hasMany(DistribusiDetail::class);
     }
 
-    // TAMBAHKAN RELASI INI
     public function buktis()
     {
         return $this->hasMany(DistribusiBukti::class);

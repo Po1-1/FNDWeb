@@ -12,7 +12,7 @@ class UserSeeder extends Seeder
 {
     public function run(): void
     {
-        // 0. Developer (Super Admin) - Tidak punya tenant
+        // Developer (Super Admin) - Tidak punya tenant
         User::create([
             'name' => 'Developer',
             'email' => 'dev@fnd.test',
@@ -24,9 +24,9 @@ class UserSeeder extends Seeder
         // Buat Tenant Default untuk data yang sudah ada
         $defaultTenant = Tenant::create(['name' => 'FND Default']);
 
-        // 1. Admin
+        // Admin
         User::create([
-            'tenant_id' => $defaultTenant->id, // <-- INI PERBAIKANNYA
+            'tenant_id' => $defaultTenant->id, 
             'name' => 'Admin User',
             'email' => 'admin@fnd.test',
             'password' => Hash::make('password'),
@@ -34,9 +34,9 @@ class UserSeeder extends Seeder
             'email_verified_at' => now(),
         ]);
 
-        // 2. Kasir
+        // Kasir
         User::create([
-            'tenant_id' => $defaultTenant->id, // Kaitkan ke tenant
+            'tenant_id' => $defaultTenant->id,
             'name' => 'Kasir FND',
             'email' => 'kasir@fnd.test',
             'password' => Hash::make('password'),
@@ -44,6 +44,5 @@ class UserSeeder extends Seeder
             'email_verified_at' => now(),
         ]);
         
-        // Catatan: User Mentor akan dibuat di MahasiswaSeeder
     }
 }
