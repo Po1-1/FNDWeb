@@ -27,7 +27,6 @@ class MahasiswaImport implements ToModel, WithHeadingRow, WithValidation, Should
 
     public function model(array $row)
     {
-        // 1. LOGIKA KELOMPOK (Sederhana)
         // Cari Kelompok berdasarkan nama. Jika tidak ada, buat baru.
         $kelompok = Kelompok::firstOrCreate(
             [
@@ -40,7 +39,7 @@ class MahasiswaImport implements ToModel, WithHeadingRow, WithValidation, Should
             ]
         );
 
-        // 2. LOGIKA MENTOR (Panitia = Mentor)
+        //(Panitia = Mentor)
         $userId = null;
         if (isset($row['prodi']) && strtoupper($row['prodi']) === 'PANITIA') {
             $email = Str::slug($row['nama'], '.') . '@mentor.test';
@@ -57,13 +56,13 @@ class MahasiswaImport implements ToModel, WithHeadingRow, WithValidation, Should
             $userId = $user->id;
         }
 
-        // 3. LOGIKA IS_VEGAN
+        // IS_VEGAN
         $isVegan = false;
         if (isset($row['is_vegan'])) {
             $isVegan = in_array(strtoupper($row['is_vegan']), ['1', 'TRUE', 'YA', 'YES']);
         }
 
-        // 4. BUAT MAHASISWA
+        // BUAT MAHASISWA
         $mahasiswa = Mahasiswa::create([
             'event_id'    => $this->activeEventId,
             'nim'         => $row['nim'],
@@ -93,6 +92,6 @@ class MahasiswaImport implements ToModel, WithHeadingRow, WithValidation, Should
     // Method untuk memproses file dalam potongan (chunks)
     public function chunkSize(): int
     {
-        return 200; // Proses 200 baris per job, sesuaikan jika perlu
+        return 10; // Proses 10 baris per job, sesuaikan jika perlu
     }
 }

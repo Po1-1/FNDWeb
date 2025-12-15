@@ -239,6 +239,8 @@ class MahasiswaController extends Controller
      */
     public function import(Request $request)
     {
+        set_time_limit(500);
+
         $request->validate([
             'file' => 'required|mimes:xlsx,xls'
         ]);
