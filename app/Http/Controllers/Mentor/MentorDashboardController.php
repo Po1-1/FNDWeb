@@ -13,8 +13,8 @@ class MentorDashboardController extends Controller
     private function getActiveEvent()
     {
         return Event::where('tenant_id', Auth::user()->tenant_id)
-                      ->where('is_active', true)
-                      ->first();
+            ->where('is_active', true)
+            ->first();
     }
 
     public function index(Request $request)

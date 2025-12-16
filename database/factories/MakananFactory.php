@@ -23,7 +23,7 @@ class MakananFactory extends Factory
         $isVegan = str_contains($bahan, 'Vegan');
 
         return [
-            'vendor_id' => \App\Models\Vendor::factory(), // Otomatis membuat vendor baru
+            'vendor_id' => \App\Models\Vendor::factory(),
             'nama_menu' => 'Menu ' . fake()->word(),
             'deskripsi' => fake()->sentence(),
             'bahan' => $bahan,

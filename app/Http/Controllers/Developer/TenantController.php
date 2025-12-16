@@ -41,7 +41,7 @@ class TenantController extends Controller
                 // Buat Tenant
                 $tenant = Tenant::create([
                     'name' => $request->tenant_name,
-                    'domain' => Str::slug($request->tenant_name), // e.g., 'FND 2025' -> 'fnd-2025'
+                    'domain' => Str::slug($request->tenant_name),
                 ]);
 
                 // Buat User Admin untuk tenant tersebut

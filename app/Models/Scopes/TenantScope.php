@@ -18,8 +18,7 @@ class TenantScope implements Scope
      */
     public function apply(Builder $builder, Model $model): void
     {
-        // Hanya terapkan filter jika ada user yang login DAN rolenya BUKAN developer.
-        // Developer bisa melihat semua data dari semua tenant.
+        
         if (Auth::check() && Auth::user()->role !== 'developer') {
             $builder->where($model->getTable() . '.tenant_id', Auth::user()->tenant_id);
         }

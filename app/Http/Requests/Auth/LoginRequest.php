@@ -19,7 +19,7 @@ class LoginRequest extends FormRequest
         return true;
     }
 
-  
+
     // Get the validation rules that apply to the request.
     
     public function rules(): array
@@ -31,7 +31,6 @@ class LoginRequest extends FormRequest
     }
 
    //Attempt to authenticate the request's credentials.
-     
     public function authenticate(): void
     {
         $this->ensureIsNotRateLimited();
@@ -68,7 +67,6 @@ class LoginRequest extends FormRequest
     }
 
     // Get the rate limiting throttle key for the request.
- 
     public function throttleKey(): string
     {
         return Str::transliterate(Str::lower($this->string('email')).'|'.$this->ip());

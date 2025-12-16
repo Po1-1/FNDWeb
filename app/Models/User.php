@@ -16,7 +16,7 @@ class User extends Authenticatable
         'email',
         'password',
         'role',
-        'tenant_id', 
+        'tenant_id',
     ];
 
     protected $hidden = [
@@ -33,7 +33,7 @@ class User extends Authenticatable
     }
 
     //Relasi: User (admin, mentor, kasir) milik satu Tenant.
-     
+
     public function tenant()
     {
         return $this->belongsTo(Tenant::class);

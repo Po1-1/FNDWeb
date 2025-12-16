@@ -14,7 +14,7 @@ class GuestController extends Controller
      */
     public function index()
     {
-        // View 'welcome.blade.php' adalah halaman utama publik Anda
+        
         return view('welcome'); 
     }
 
@@ -23,7 +23,7 @@ class GuestController extends Controller
      */
     public function about()
     {
-        // Anda perlu membuat file view ini
+        
         return view('public.about');
     }
 

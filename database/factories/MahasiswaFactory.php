@@ -18,18 +18,18 @@ class MahasiswaFactory extends Factory
         // Ini mengasumsikan KelompokSeeder sudah berjalan
         // Kita filter agar tidak mengambil "Panitia Inti" secara acak
         $kelompokId = Kelompok::where('nama', '!=', 'Panitia Inti')
-                              ->inRandomOrder()
-                              ->first()
-                              ->id;
+            ->inRandomOrder()
+            ->first()
+            ->id;
 
         return [
             'nim' => '110' . fake()->unique()->numberBetween(1000, 9999),
             'nama' => fake()->name(),
             'prodi' => $prodi,
-            'kelompok_id' => $kelompokId, // <-- INI SOLUSINYA
+            'kelompok_id' => $kelompokId, 
             'no_urut' => fake()->numberBetween(1, 100),
-            'is_vegan' => fake()->boolean(10), // 10% kemungkinan vegan
-            'user_id' => null, // Akan di-handle oleh Seeder jika Panitia
+            'is_vegan' => fake()->boolean(10), 
+            'user_id' => null, 
         ];
     }
 }
