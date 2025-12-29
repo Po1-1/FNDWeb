@@ -5,93 +5,124 @@ namespace App\Imports;
 use App\Models\Mahasiswa;
 use App\Models\Kelompok;
 use App\Models\User;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
-use Maatwebsite\Excel\Concerns\ToModel;
+use Maatwebsite\Excel\Concerns\ToCollection;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Maatwebsite\Excel\Concerns\WithValidation;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Maatwebsite\Excel\Concerns\WithChunkReading;
+use Maatwebsite\Excel\Concerns\SkipsEmptyRows; // <--- TAMBAHAN 1
 
-class MahasiswaImport implements ToModel, WithHeadingRow, WithValidation, ShouldQueue, WithChunkReading
+// Tambahkan SkipsEmptyRows di implements
+class MahasiswaImport implements ToCollection, WithHeadingRow, WithValidation, ShouldQueue, WithChunkReading, SkipsEmptyRows 
 {
     private $activeEventId;
-    private $tenantId; // Simpan tenantId
+    private $tenantId;
 
-    public function __construct()
+    public function __construct($activeEventId, $tenantId)
     {
-        $this->activeEventId = session('active_event_id');
-        $this->tenantId = Auth::user()->tenant_id; // Ambil tenantId saat job dibuat
+        $this->activeEventId = $activeEventId;
+        $this->tenantId = $tenantId;
     }
 
-    public function model(array $row)
+    public function collection(Collection $rows)
     {
-        // Cari Kelompok berdasarkan nama. Jika tidak ada, buat baru.
-        $kelompok = Kelompok::firstOrCreate(
-            [
-                'event_id' => $this->activeEventId,
-                'nama' => $row['kelompok']
-            ],
-            [
-                'event_id' => $this->activeEventId,
-                'nama' => $row['kelompok']
-            ]
-        );
+        // === STEP 1: PROSES KELOMPOK (BULK) ===
+        // Filter baris yang benar-benar punya data kelompok
+        $validRows = $rows->filter(function ($row) {
+            return !empty($row['kelompok']) && !empty($row['nim']);
+        });
 
-        //(Panitia = Mentor)
-        $userId = null;
-        if (isset($row['prodi']) && strtoupper($row['prodi']) === 'PANITIA') {
-            $email = Str::slug($row['nama'], '.') . '@mentor.test';
-            $user = User::firstOrCreate(
-                ['email' => $email],
-                [
-                    'tenant_id' => $this->tenantId, // Gunakan tenantId yang disimpan
-                    'name' => $row['nama'],
-                    'password' => Hash::make('password'),
-                    'role' => 'mentor',
-                    'email_verified_at' => now()
-                ]
-            );
-            $userId = $user->id;
+        if ($validRows->isEmpty()) {
+            return;
         }
 
-        // IS_VEGAN
-        $isVegan = false;
-        if (isset($row['is_vegan'])) {
-            $isVegan = in_array(strtoupper($row['is_vegan']), ['1', 'TRUE', 'YA', 'YES']);
+        $groupNames = $validRows->pluck('kelompok')->filter()->unique();
+
+        $existingGroups = Kelompok::where('event_id', $this->activeEventId)
+            ->whereIn('nama', $groupNames)
+            ->pluck('id', 'nama');
+
+        $groupsToCreate = $groupNames->diff($existingGroups->keys());
+        $newGroupsData = [];
+        $now = now();
+
+        foreach ($groupsToCreate as $name) {
+            $newGroupsData[] = [
+                'event_id' => $this->activeEventId,
+                'nama' => $name,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ];
         }
 
-        // BUAT MAHASISWA
-        $mahasiswa = Mahasiswa::create([
-            'event_id'    => $this->activeEventId,
-            'nim'         => $row['nim'],
-            'nama'        => $row['nama'],
-            'prodi'       => $row['prodi'] ?? null,
-            'kelompok_id' => $kelompok->id,
-            'no_urut'     => $row['no'], 
-            'is_vegan'    => $isVegan,
-            'user_id'     => $userId,
-        ]);
+        if (!empty($newGroupsData)) {
+            Kelompok::insert($newGroupsData);
+        }
 
-        return $mahasiswa;
+        $finalGroupMap = Kelompok::where('event_id', $this->activeEventId)
+            ->whereIn('nama', $groupNames)
+            ->pluck('id', 'nama');
+
+
+        // === STEP 2: PERSIAPAN DATA MAHASISWA ===
+        $mahasiswaInsertData = [];
+
+        foreach ($validRows as $row) { // Loop hanya baris valid
+            $groupId = $finalGroupMap[$row['kelompok']] ?? null;
+            $userId = null;
+
+            if (isset($row['prodi']) && strtoupper($row['prodi']) === 'PANITIA') {
+                $email = Str::slug($row['nama'], '.') . '@mentor.test';
+                $user = User::firstOrCreate(
+                    ['email' => $email],
+                    [
+                        'tenant_id' => $this->tenantId,
+                        'name' => $row['nama'],
+                        'password' => Hash::make('password'),
+                        'role' => 'mentor', 
+                        'email_verified_at' => $now
+                    ]
+                );
+                $userId = $user->id;
+            }
+
+            $isVeganInput = strtoupper((string) ($row['is_vegan'] ?? ''));
+            $isVegan = in_array($isVeganInput, ['1', 'TRUE', 'YA', 'YES']) ? 1 : 0;
+
+            $mahasiswaInsertData[] = [
+                'event_id'    => $this->activeEventId,
+                'nim'         => $row['nim'],
+                'nama'        => $row['nama'],
+                'prodi'       => $row['prodi'] ?? null,
+                'kelompok_id' => $groupId,
+                'no_urut'     => $row['no'],
+                'is_vegan'    => $isVegan,
+                'user_id'     => $userId,
+                'created_at'  => $now,
+                'updated_at'  => $now,
+            ];
+        }
+
+        // === STEP 3: INSERT MAHASISWA ===
+        if (!empty($mahasiswaInsertData)) {
+            Mahasiswa::insertOrIgnore($mahasiswaInsertData); // Gunakan insertOrIgnore agar kalau ada duplikat dia skip, tidak error
+        }
     }
 
     public function rules(): array
     {
         return [
-            'nim' => 'required|unique:mahasiswas,nim,NULL,id,event_id,' . $this->activeEventId,
-            'nama' => 'required|string|max:255',
-            'prodi' => 'nullable|string',
-            'kelompok' => 'required|string',
-            'no' => 'required|integer', 
-            'is_vegan' => 'nullable',
+            'nim' => 'required',
+            'nama' => 'required',
+            // Hapus validasi lain yg terlalu ketat untuk baris kosong
         ];
     }
 
-    // Method untuk memproses file dalam potongan (chunks)
     public function chunkSize(): int
     {
-        return 10; // Proses 10 baris per job, sesuaikan jika perlu
+        return 1000;
     }
 }

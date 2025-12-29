@@ -13,7 +13,6 @@ use Illuminate\Support\Facades\Auth;
 
 use App\Imports\MahasiswaImport;
 use Maatwebsite\Excel\Facades\Excel;
-use Maatwebsite\Excel\Validators\ValidationException;
 
 class MahasiswaController extends Controller
 {
@@ -64,6 +63,7 @@ class MahasiswaController extends Controller
 
         return view('admin.mahasiswa.create', compact('kelompoks', 'alergis'));
     }
+
     public function store(Request $request)
     {
         $activeEventId = session('active_event_id');
@@ -153,6 +153,7 @@ class MahasiswaController extends Controller
         return redirect()->route('admin.mahasiswa.index')
             ->with('success', 'Data mahasiswa berhasil diperbarui.');
     }
+
     public function destroy(Mahasiswa $mahasiswa)
     {
         // Hapus relasi detail distribusi dulu jika ada 
@@ -190,23 +191,35 @@ class MahasiswaController extends Controller
         return redirect()->route('admin.mahasiswa.index')
             ->with('success', "Berhasil mereset {$deletedCount} data mahasiswa. Data Panitia Inti aman.");
     }
+
     public function showImportForm()
     {
         return view('admin.mahasiswa.import');
     }
+
+    /**
+     * LOGIC IMPORT BARU (OPTIMIZED)
+     */
     public function import(Request $request)
     {
-        set_time_limit(500);
-
+        // Validation
         $request->validate([
-            'file' => 'required|mimes:xlsx,xls'
+            'file' => 'required|mimes:xlsx,xls,csv'
         ]);
 
+        // Ambil data context sebelum masuk Queue
+        $file = $request->file('file');
+        $eventId = session('active_event_id');
+        $tenantId = Auth::user()->tenant_id;
+
         try {
-            Excel::queueImport(new MahasiswaImport, $request->file('file'));
+            // Gunakan Facade Excel::queueImport
+            // Parameter EventID & TenantID dikirim ke Constructor Import
+            Excel::queueImport(new MahasiswaImport($eventId, $tenantId), $file);
 
             return redirect()->route('admin.mahasiswa.index')
-                ->with('success', 'Data mahasiswa sedang diimpor di background. Proses mungkin memakan waktu beberapa menit.');
+                ->with('success', 'Data mahasiswa sedang diimpor di background. Proses ini jauh lebih cepat. Silakan cek berkala.');
+        
         } catch (\Exception $e) {
             return redirect()->route('admin.mahasiswa.import.form')
                 ->with('error', 'Terjadi kesalahan saat memulai proses import: ' . $e->getMessage());

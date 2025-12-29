@@ -19,13 +19,13 @@ return new class extends Migration
 
             // 'kelompok' dan 'set_vendor' diganti 'kelompok_id'
             $table->foreignId('kelompok_id')
-                  ->nullable()
-                  ->constrained('kelompoks')
-                  ->onDelete('set null');
+                ->nullable()
+                ->constrained('kelompoks')
+                ->onDelete('set null');
 
             $table->integer('no_urut');
             $table->boolean('is_vegan')->default(false);
-            
+
             // Relasi ke tabel users (untuk Mentor)
             $table->foreignId('user_id')->nullable()->constrained('users')->onDelete('set null');
 
