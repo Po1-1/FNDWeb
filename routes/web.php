@@ -16,6 +16,7 @@ use App\Http\Controllers\Admin\EventController;
 use App\Http\Controllers\Admin\EventSummaryController;
 use App\Http\Controllers\Admin\MahasiswaController;
 use App\Http\Controllers\Admin\VendorController;
+use App\Http\Controllers\Admin\VendorAllocationController;
 use App\Http\Controllers\Admin\MakananController;
 use App\Http\Controllers\Admin\InventarisLogistikController;
 use App\Http\Controllers\Admin\UserController;
@@ -85,6 +86,11 @@ Route::middleware(['auth', 'role:admin', 'event.selected'])
         // Data Master
         Route::resource('mahasiswa', MahasiswaController::class);
         Route::resource('kelompok', KelompokController::class);
+
+        // [BARU] Rute untuk Alokasi Vendor
+        Route::get('vendors/{vendor}/allocation', [VendorAllocationController::class, 'show'])->name('vendors.allocation.show');
+        Route::post('vendors/{vendor}/allocation', [VendorAllocationController::class, 'store'])->name('vendors.allocation.store');
+
         Route::resource('vendors', VendorController::class);
         Route::resource('makanan', MakananController::class);
         Route::resource('alergi', AlergiController::class);

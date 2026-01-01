@@ -23,11 +23,13 @@
                             <tr>
                                 <td>{{ $vendors->firstItem() + $loop->index }}</td>
                                 <td>{{ $vendor->nama_vendor }}</td>
-                                <td>{{ $vendor->kontak }}</td>
-                                <td>
+                                <td>{{ $vendor->kontak ?? '-' }}</td>
+                                <td class="text-end">
+                                    <a href="{{ route('admin.vendors.allocation.show', $vendor) }}" class="btn btn-sm btn-success">
+                                        <i class="bi bi-grid-3x3-gap-fill me-1"></i> Alokasi
+                                    </a>
                                     <a href="{{ route('admin.vendors.edit', $vendor) }}" class="btn btn-sm btn-warning">Edit</a>
-                                    
-                                    <form action="{{ route('admin.vendors.destroy', $vendor) }}" method="POST" class="d-inline" onsubmit="return confirm('Yakin ingin menghapus?');">
+                                    <form action="{{ route('admin.vendors.destroy', $vendor) }}" method="POST" class="d-inline" onsubmit="return confirm('Yakin hapus vendor ini?');">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="btn btn-sm btn-danger">Hapus</button>
