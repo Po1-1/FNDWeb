@@ -49,6 +49,19 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
+    // TAMBAHKAN RUTE INI
+    Route::get('/import-status', function () {
+        $status = Illuminate\Support\Facades\Cache::get('import_status_for_user_' . auth()->id());
+
+        if ($status === 'completed') {
+            // Setelah status 'completed' diberikan ke user, langsung hapus cache-nya
+            // agar tidak muncul lagi di request berikutnya.
+            Illuminate\Support\Facades\Cache::forget('import_status_for_user_' . auth()->id());
+        }
+
+        return response()->json(['status' => $status]);
+    })->name('import.status');
 });
 
 /*

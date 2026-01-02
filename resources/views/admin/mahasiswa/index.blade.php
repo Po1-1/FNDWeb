@@ -1,4 +1,7 @@
 <x-app-layout>
+    
+    <div id="import-notification-placeholder"></div>
+
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-center mb-4 gap-3">
         <h1 class="h3 mb-0">Manajemen Mahasiswa</h1>
         
@@ -108,4 +111,43 @@
             </div>
         </div>
     </div>
+
+    {{-- 2. Tambahkan script di akhir file layout --}}
+    @push('scripts')
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Cek apakah ada proses import yang sedang berjalan untuk user ini
+            // Kita gunakan status awal yang dikirim dari controller saat redirect
+            const isImporting = @json(session('is_importing'));
+
+            if (isImporting) {
+                const checkStatusInterval = setInterval(function () {
+                    fetch("{{ route('import.status') }}")
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.status === 'completed') {
+                                // Hentikan pengecekan
+                                clearInterval(checkStatusInterval);
+
+                                // Tampilkan notifikasi
+                                const placeholder = document.getElementById('import-notification-placeholder');
+                                placeholder.innerHTML = `
+                                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                                        <i class="bi bi-check-circle-fill me-2"></i>
+                                        <strong>Impor Selesai!</strong> Data mahasiswa telah berhasil diproses. Silakan refresh halaman untuk melihat data terbaru.
+                                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                    </div>
+                                `;
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error checking import status:', error);
+                            clearInterval(checkStatusInterval); // Hentikan jika ada error
+                        });
+                }, 5000); // Cek setiap 5 detik
+            }
+        });
+    </script>
+    @endpush
+
 </x-app-layout>

@@ -19,5 +19,6 @@
         {{ $slot }}
     </main>
 
+    @stack('scripts') {{-- TAMBAHKAN ATAU PASTIKAN INI ADA --}}
 </body>
 </html>

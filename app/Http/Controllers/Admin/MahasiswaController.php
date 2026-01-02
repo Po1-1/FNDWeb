@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache; // Tambahkan ini
 
 use App\Imports\MahasiswaImport;
 use Maatwebsite\Excel\Facades\Excel;
@@ -211,14 +212,15 @@ class MahasiswaController extends Controller
         $file = $request->file('file');
         $eventId = session('active_event_id');
         $tenantId = Auth::user()->tenant_id;
+        $userId = Auth::id(); // Ambil ID user yang sedang login
 
         try {
-            // Gunakan Facade Excel::queueImport
-            // Parameter EventID & TenantID dikirim ke Constructor Import
-            Excel::queueImport(new MahasiswaImport($eventId, $tenantId), $file);
+            Cache::put('import_status_for_user_' . $userId, 'processing', now()->addMinutes(30));
+            Excel::queueImport(new MahasiswaImport($eventId, $tenantId, $userId), $file);
 
             return redirect()->route('admin.mahasiswa.index')
-                ->with('success', 'Data mahasiswa sedang diimpor di background. Proses ini jauh lebih cepat. Silakan cek berkala.');
+                ->with('success', 'Proses impor data telah dimulai. Notifikasi akan muncul di halaman ini jika sudah selesai.')
+                ->with('is_importing', true); // <-- TAMBAHKAN INI
         
         } catch (\Exception $e) {
             return redirect()->route('admin.mahasiswa.import.form')
