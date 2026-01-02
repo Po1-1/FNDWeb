@@ -15,6 +15,17 @@
         </div>
     </div>
 
+    {{-- Tampilkan Alert jika data diambil dari Mentor --}}
+    @if(isset($mahasiswaHadirIds) && !is_null($mahasiswaHadirIds))
+        <div class="alert alert-success d-flex align-items-center mb-3">
+            <i class="bi bi-check-circle-fill me-2"></i>
+            <div>
+                <strong>Data Absensi Mentor Ditemukan!</strong>
+                Checklist telah disesuaikan dengan laporan kehadiran dari Mentor.
+            </div>
+        </div>
+    @endif
+
     <form action="{{ route('kasir.distribusi.storeChecklist') }}" method="POST">
         @csrf
         <input type="hidden" name="kelompok_id" value="{{ $kelompok->id }}">
@@ -43,13 +54,24 @@
                         <tbody>
                             @foreach($kelompok->mahasiswas as $mhs)
                             @php
-                                // ambil vendor anak ini untuk hari/waktu ini
                                 $vendorAnak = $mhs->getVendorFor($hariKe, $waktuMakan);
                                 $isCustom = $mhs->custom_vendor_id ? true : false;
+                                
+                                // PERBAIKAN DI SINI:
+                                // Ambil variabel dengan aman. Jika undefined, anggap null.
+                                $listAbsensi = $mahasiswaHadirIds ?? null;
+
+                                // LOGIKA:
+                                // 1. Jika $listAbsensi NULL (tidak ada data mentor), default TRUE (Hadir).
+                                // 2. Jika $listAbsensi ARRAY, cek apakah ID ada di dalamnya.
+                                $isChecked = is_null($listAbsensi) ? true : in_array($mhs->id, $listAbsensi);
                             @endphp
                             <tr class="{{ $isCustom ? 'table-warning' : '' }}">
                                 <td class="text-center">
-                                    <input type="checkbox" name="hadir[]" value="{{ $mhs->id }}" class="form-check-input chk-mhs" checked style="transform: scale(1.3);">
+                                    <input type="checkbox" name="hadir[]" value="{{ $mhs->id }}" 
+                                           class="form-check-input chk-mhs" 
+                                           {{ $isChecked ? 'checked' : '' }} 
+                                           style="transform: scale(1.3);">
                                 </td>
                                 <td class="fw-bold">{{ $mhs->nama }}</td>
                                 <td>

@@ -11,6 +11,7 @@ use App\Models\LogPenggunaanLogistik;
 use App\Models\Event;
 use App\Models\Kelompok;
 use App\Models\Mahasiswa;
+use App\Models\Absensi; // <-- Tambahkan import ini
 use Carbon\Carbon;
 use Illuminate\Validation\Rule; 
 
@@ -32,6 +33,7 @@ class DistribusiController extends Controller
         ]);
 
         $activeEvent = $this->getActiveEvent();
+        
         $kelompok = Kelompok::where('event_id', $activeEvent->id)
             ->with(['mahasiswas.alergi', 'mahasiswas.customVendor'])
             ->find($request->kelompok_id);
@@ -44,7 +46,25 @@ class DistribusiController extends Controller
         $waktuMakan = $request->waktu_makan;
         $vendorKelompok = $kelompok->getVendorOn($hariKe, $waktuMakan);
 
-        return view('kasir.distribusi.checklist', compact('kelompok', 'hariKe', 'waktuMakan', 'vendorKelompok'));
+        // --- TAMBAHKAN KODE INI ---
+        // Cek Absensi Mentor
+        $absensiMentor = Absensi::where('event_id', $activeEvent->id)
+            ->where('kelompok_id', $kelompok->id)
+            ->where('hari_ke', $hariKe)
+            ->where('waktu_makan', $waktuMakan)
+            ->with('details')
+            ->first();
+
+        $mahasiswaHadirIds = null;
+        if ($absensiMentor) {
+            $mahasiswaHadirIds = $absensiMentor->details
+                ->where('is_hadir', true)
+                ->pluck('mahasiswa_id')
+                ->toArray();
+        }
+        // ---------------------------
+
+        return view('kasir.distribusi.checklist', compact('kelompok', 'hariKe', 'waktuMakan', 'vendorKelompok', 'mahasiswaHadirIds'));
     }
 
     // Simpan Transaksi Makanan 

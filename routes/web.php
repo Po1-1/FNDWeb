@@ -110,7 +110,11 @@ Route::middleware(['auth', 'role:mentor'])
     ->prefix('mentor')
     ->name('mentor.')
     ->group(function () {
-        Route::get('/dashboard', [MentorDashboardController::class, 'index'])->name('dashboard');
+        // KEMBALIKAN KE CONTROLLER
+        Route::get('/dashboard', [\App\Http\Controllers\Mentor\MentorDashboardController::class, 'index'])->name('dashboard');
+        
+        Route::get('/absensi', [\App\Http\Controllers\Mentor\AbsensiController::class, 'create'])->name('absensi.create');
+        Route::post('/absensi', [\App\Http\Controllers\Mentor\AbsensiController::class, 'store'])->name('absensi.store');
     });
 
 /*

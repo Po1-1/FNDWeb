@@ -49,6 +49,18 @@
                     <li class="nav-item"><a class="nav-link" href="{{ route('admin.summaries.index') }}">Laporan</a></li>
                 @endif
 
+                @if (Auth::user()->role == 'mentor')
+                    {{-- Kembalikan Menu Dashboard --}}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ route('mentor.dashboard') }}">Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link fw-bold text-primary" href="{{ route('mentor.absensi.create') }}">
+                            <i class="bi bi-calendar-check me-1"></i> Absensi Kelompok
+                        </a>
+                    </li>
+                @endif
+
                 @if(Auth::user()->role === 'developer')
                     <li class="nav-item"><a class="nav-link" href="{{ route('developer.tenants.index') }}">Manajemen Tenant</a></li>
                 @endif

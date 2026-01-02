@@ -4,78 +4,65 @@
             <h1 class="h3 fw-bold text-dark mb-1">Dashboard Mentor</h1>
             <p class="text-muted mb-0">Selamat datang, {{ $user->name }}!</p>
         </div>
-    </div>
-
-    {{-- PENCARIAN MAHASISWA --}}
-    <h4 class="fw-bold text-dark mb-3">Pencarian Global</h4>
-    <div class="card border-0 shadow-sm rounded-4 mb-4 bg-white">
-        <div class="card-body p-4">
-            <form action="{{ route('mentor.dashboard') }}" method="GET">
-                <div class="input-group">
-                    <input type="text" class="form-control border-end-0 bg-light" name="query"
-                        placeholder="Filter berdasarkan NIM, Nama, atau Kelompok..." value="{{ $query ?? '' }}">
-                    <button class="btn btn-primary px-5" type="submit">
-                        <i class="bi bi-search"></i> Filter
-                    </button>
-                </div>
-            </form>
+        <div class="col-md-4 text-md-end">
+            <div class="d-inline-block bg-white px-4 py-2 rounded-pill shadow-sm border">
+                <i class="bi bi-calendar-event text-primary me-2"></i>
+                <span class="fw-bold text-dark">Hari ke-{{ $hariKe }}</span>
+            </div>
         </div>
     </div>
 
-    <!-- HASIL PENCARIAN  -->
-    <div class="card shadow-sm border-0 rounded-4 overflow-hidden">
-        <div class="card-body p-0">
-            @if ($results->isEmpty())
-                <div class="text-center py-5">
-                    <div class="mb-3 text-muted opacity-50"><i class="bi bi-emoji-frown fs-1"></i></div>
-                    <h5 class="fw-bold text-muted">Data tidak ditemukan</h5>
-                    @if ($query)
-                        <p class="text-muted small">Tidak ada hasil untuk pencarian "{{ $query }}".</p>
-                    @else
-                        <p class="text-muted small">Belum ada data mahasiswa di dalam sistem.</p>
-                    @endif
-                </div>
-            @else
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle mb-0">
-                        <thead class="bg-light">
-                            <tr>
-                                <th class="ps-4 py-3">Mahasiswa</th>
-                                <th class="py-3">Kelompok</th>
-                                <th class="py-3">Vendor</th>
-                                <th class="py-3">Status Diet & Alergi</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach ($results as $mahasiswa)
-                                <tr>
-                                    <td class="ps-4">
-                                        <div class="fw-bold text-dark">{{ $mahasiswa->nama }}</div>
-                                        <div class="small text-muted">{{ $mahasiswa->nim }}</div>
-                                    </td>
-                                    <td><span
-                                            class="badge bg-light text-dark border">{{ $mahasiswa->kelompok->nama ?? 'N/A' }}</span>
-                                    </td>
-                                    <td>{{ $mahasiswa->kelompok->vendor->nama_vendor ?? 'Belum Diatur' }}</td>
-                                    <td>
-                                        @if ($mahasiswa->is_vegan)
-                                            <span
-                                                class="badge bg-success bg-opacity-10 text-success rounded-pill">Vegan</span>
-                                        @endif
-                                        @foreach ($mahasiswa->alergi as $alergi)
-                                            <span
-                                                class="badge bg-danger bg-opacity-10 text-danger rounded-pill">{{ $alergi->nama }}</span>
-                                        @endforeach
-                                    </td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
-                @if ($results->hasPages())
-                    <div class="p-3 border-top bg-light">{{ $results->links() }}</div>
-                @endif
-            @endif
+    @if(!$assignedKelompokId)
+        <div class="alert alert-warning">
+            <i class="bi bi-exclamation-triangle me-2"></i>
+            Akun Anda belum terhubung dengan data Mahasiswa/Kelompok di event ini. Silakan hubungi Admin.
         </div>
-    </div>
+    @else
+        <h5 class="fw-bold mb-3">Absensi Makan Hari Ini</h5>
+        <div class="row g-3 mb-5">
+            @foreach(['pagi', 'siang', 'sore', 'malam'] as $waktu)
+                @php
+                    $data = $summaryAbsensi[$waktu];
+                    $isFilled = $data['filled'];
+                    
+                    $bgClass = $isFilled ? 'bg-success bg-opacity-10 border-success' : 'bg-white border-0 shadow-sm';
+                    $textClass = $isFilled ? 'text-success' : 'text-dark';
+                    $icon = match($waktu) {
+                        'pagi' => 'bi-sunrise',
+                        'siang' => 'bi-sun',
+                        'sore' => 'bi-sunset',
+                        'malam' => 'bi-moon-stars',
+                    };
+                @endphp
+                <div class="col-md-3 col-6">
+                    <a href="{{ route('mentor.absensi.create', ['hari_ke' => $hariKe, 'waktu_makan' => $waktu]) }}" 
+                       class="card h-100 text-decoration-none {{ $bgClass }} hover-effect">
+                        <div class="card-body text-center p-4">
+                            <div class="fs-1 mb-2 {{ $textClass }}">
+                                <i class="bi {{ $icon }}"></i>
+                            </div>
+                            <h5 class="fw-bold text-capitalize {{ $textClass }} mb-3">{{ $waktu }}</h5>
+                            
+                            @if($isFilled)
+                                <div class="mb-2">
+                                    <span class="display-6 fw-bold text-success">{{ $data['hadir'] }}</span>
+                                    <span class="text-muted small">/ {{ $data['total'] }} Hadir</span>
+                                </div>
+                                <span class="badge bg-success rounded-pill">
+                                    <i class="bi bi-check-circle me-1"></i> Sudah Diisi
+                                </span>
+                            @else
+                                <div class="mb-2 text-muted opacity-50">
+                                    <span class="display-6 fw-bold">-</span>
+                                </div>
+                                <span class="badge bg-secondary bg-opacity-25 text-dark rounded-pill">
+                                    Belum Diisi
+                                </span>
+                            @endif
+                        </div>
+                    </a>
+                </div>
+            @endforeach
+        </div>
+    @endif
 </x-app-layout>

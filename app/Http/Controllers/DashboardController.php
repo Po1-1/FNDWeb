@@ -20,6 +20,7 @@ class DashboardController extends Controller
         } 
         
         if ($role === 'mentor') {
+            // KEMBALIKAN KE DASHBOARD
             return redirect()->route('mentor.dashboard');
         }
         
