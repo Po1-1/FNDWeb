@@ -22,7 +22,7 @@ class KelompokController extends Controller
         $activeEventId = session('active_event_id');
         $kelompoks = Kelompok::where('event_id', $activeEventId)
             ->withCount('mahasiswas')
-            ->orderBy('nama')
+            ->orderByRaw("CASE WHEN SUBSTR(nama, 1, 1) BETWEEN '0' AND '9' THEN 1 ELSE 2 END, CAST(SUBSTR(nama, 1, INSTR(nama, ' ') - 1) AS INTEGER), nama")
             ->paginate(15);
 
         return view('admin.kelompok.index', compact('kelompoks'));

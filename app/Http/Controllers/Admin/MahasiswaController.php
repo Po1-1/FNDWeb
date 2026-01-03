@@ -27,12 +27,13 @@ class MahasiswaController extends Controller
 
         $mahasiswas = Mahasiswa::query()
             // FILTER UTAMA BERDASARKAN EVENT AKTIF
-            ->where('event_id', $activeEventId)
+            ->where('mahasiswas.event_id', $activeEventId)
 
             ->with(['kelompok', 'alergi'])
 
             // PENCEGAHAN DUPLIKASI QUERY
             ->select('mahasiswas.*')
+            ->leftJoin('kelompoks', 'mahasiswas.kelompok_id', '=', 'kelompoks.id')
             ->distinct('mahasiswas.id')
 
             ->when($search, function ($q, $search) use ($activeEventId) {
@@ -49,7 +50,8 @@ class MahasiswaController extends Controller
                         });
                 });
             })
-            ->orderBy('nama')
+            ->orderByRaw("CASE WHEN SUBSTR(kelompoks.nama, 1, 1) BETWEEN '0' AND '9' THEN 1 ELSE 2 END, CAST(SUBSTR(kelompoks.nama, 1, INSTR(kelompoks.nama, ' ') - 1) AS INTEGER), kelompoks.nama")
+            ->orderBy('mahasiswas.nama')
             ->paginate(15)
             ->appends($request->except('page'));
 
