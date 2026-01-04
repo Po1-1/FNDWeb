@@ -12,8 +12,8 @@
                 alergi atau kebutuhan diet khusus (seperti vegan), mendapatkan makanan yang tepat dari vendor yang
                 telah ditetapkan untuk kelompok mereka.
             </p>
-            <p>
-                Fitur pencarian publik ini disediakan untuk memudahkan mentor, orang tua, atau peserta lain
+            <p class="text-muted">
+                Fitur pencarian publik ini disediakan untuk memudahkan ketua kelompok, orang tua, atau peserta lain
                 dalam melacak informasi kelompok dan vendor.
             </p>
         </div>

@@ -19,8 +19,8 @@
                 <div class="mb-3">
                     <label for="role" class="form-label">Role</label>
                     <select class="form-select @error('role') is-invalid @enderror" id="role" name="role" required>
-                        <option value="mentor" {{ old('role', $user->role) == 'mentor' ? 'selected' : '' }}>Mentor</option>
-                        <option value="kasir" {{ old('role', $user->role) == 'kasir' ? 'selected' : '' }}>Kasir</option>
+                        <option value="mentor" {{ old('role', $user->role) == 'mentor' ? 'selected' : '' }}>Ketua Kelompok</option>
+                        <option value="kasir" {{ old('role', $user->role) == 'kasir' ? 'selected' : '' }}>Distributor</option>
                     </select>
                     @error('role') <div class="invalid-feedback">{{ $message }}</div> @enderror
                 </div>

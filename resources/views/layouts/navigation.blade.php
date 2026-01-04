@@ -101,6 +101,39 @@
                     </ul>
                 </li>
             </ul>
+
+            <div class="dropdown d-none d-lg-block ms-2">
+                <a href="#" class="d-flex align-items-center text-decoration-none dropdown-toggle" data-bs-toggle="dropdown">
+                    <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center fw-bold shadow-sm" style="width: 38px; height: 38px;">
+                        {{ substr(Auth::user()->name, 0, 1) }}
+                    </div>
+                    <div class="ms-2 text-start d-none d-xl-block">
+                        <div class="fw-bold small text-white">{{ Auth::user()->name }}</div>
+                        {{-- Ubah tampilan Role --}}
+                        <div class="text-muted" style="font-size: 0.75rem;">
+                            @if(Auth::user()->role == 'mentor')
+                                Ketua Kelompok
+                            @elseif(Auth::user()->role == 'kasir')
+                                Distributor
+                            @else
+                                {{ ucfirst(Auth::user()->role) }}
+                            @endif
+                        </div>
+                    </div>
+                </a>
+                <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 mt-2">
+                    <li><a class="dropdown-item rounded-3 px-3 py-2" href="{{ route('profile.edit') }}">Edit Profil</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li>
+                        <form method="POST" action="{{ route('logout') }}">
+                            @csrf
+                            <button type="submit" class="dropdown-item rounded-3 px-3 py-2 text-danger fw-bold">
+                                Log Out
+                            </button>
+                        </form>
+                    </li>
+                </ul>
+            </div>
         </div>
     </div>
 </nav>

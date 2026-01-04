@@ -19,8 +19,7 @@
 
     <div class="card shadow-sm">
         <div class="card-body">
-            <p>Upload file XLSX/XLS untuk mengimpor data mahasiswa secara massal.</p>
-            <p><strong>Penting:</strong> Pastikan file Anda memiliki kolom (heading): <strong>nim, nama, prodi, kelompok, no_urut, is_vegan (1 atau 0)</strong>. Logika "Panitia = Mentor" dan "Pembuatan Kelompok" akan dijalankan saat proses import.</p>
+            <p><strong>Penting:</strong> Pastikan file Anda memiliki kolom (heading): <strong>nim, nama, prodi, kelompok, no_urut, is_vegan (1 atau 0)</strong>. Logika "Panitia = Ketua Kelompok" dan "Pembuatan Kelompok" akan dijalankan saat proses import.</p>
             
             <form action="{{ route('admin.mahasiswa.import') }}" method="POST" enctype="multipart/form-data">
                 @csrf

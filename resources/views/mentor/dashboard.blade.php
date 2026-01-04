@@ -1,7 +1,8 @@
 <x-app-layout>
     <div class="row align-items-center mb-4">
         <div class="col-md-8">
-            <h1 class="h3 fw-bold text-dark mb-1">Dashboard Mentor</h1>
+            {{-- Ubah Judul --}}
+            <h1 class="h3 fw-bold text-dark mb-1">Dashboard Ketua Kelompok</h1>
             <p class="text-muted mb-0">Selamat datang, {{ $user->name }}!</p>
         </div>
         <div class="col-md-4 text-md-end">

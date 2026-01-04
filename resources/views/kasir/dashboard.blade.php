@@ -1,6 +1,7 @@
 <x-app-layout>
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 class="mb-0">Dashboard Kasir</h1>
+        {{-- Ubah Judul --}}
+        <h1 class="mb-0">Dashboard Distributor</h1>
         <div class="text-end">
             <span class="badge bg-primary fs-6">{{ $activeEvent->nama_event }}</span>
             <div class="text-muted small mt-1">{{ \Carbon\Carbon::now()->translatedFormat('l, d F Y H:i') }}</div>

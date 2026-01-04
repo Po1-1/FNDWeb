@@ -38,7 +38,7 @@
                         </div>
                         
                         <p class="text-muted small mt-4">
-                            Data kalkulasi (penggunaan galon, plastik, makanan, vendor) akan diambil otomatis dari log kasir saat Anda menekan tombol "Generate".
+                            Data kalkulasi (penggunaan galon, plastik, makanan, vendor) akan diambil otomatis dari log distributor saat Anda menekan tombol "Generate".
                         </p>
 
                         <div class="mt-4">
@@ -70,7 +70,7 @@
                     </div>
                 </div>
                 <div class="card shadow-sm">
-                    <div class="card-header fs-5">Log Catatan Harian Kasir</div>
+                    <div class="card-header fs-5">Log Catatan Harian Distributor</div>
                     <div class="card-body" style="max-height: 500px; overflow-y: auto;">
                         <h6 class="text-muted">Catatan Distribusi Makanan</h6>
                         @forelse ($makananNotes as $note)

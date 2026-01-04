@@ -20,8 +20,10 @@
                     <label for="role" class="form-label">Role</label>
                     <select class="form-select @error('role') is-invalid @enderror" id="role" name="role" required>
                         <option value="">Pilih Role...</option>
-                        <option value="mentor" {{ old('role') == 'mentor' ? 'selected' : '' }}>Mentor</option>
-                        <option value="kasir" {{ old('role') == 'kasir' ? 'selected' : '' }}>Kasir</option>
+                        {{-- Value tetap 'mentor', Teks jadi 'Ketua Kelompok' --}}
+                        <option value="mentor" {{ old('role') == 'mentor' ? 'selected' : '' }}>Ketua Kelompok</option>
+                        {{-- Value tetap 'kasir', Teks jadi 'Distributor' --}}
+                        <option value="kasir" {{ old('role') == 'kasir' ? 'selected' : '' }}>Distributor</option>
                     </select>
                     @error('role') <div class="invalid-feedback">{{ $message }}</div> @enderror
                 </div>

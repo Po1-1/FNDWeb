@@ -6,10 +6,10 @@
     
     <div class="alert alert-info">
         <i class="bi bi-info-circle me-2"></i>
-        Data yang Anda isi di sini akan <strong>langsung terhubung ke Kasir</strong>.
+        Data yang Anda isi di sini akan <strong>langsung terhubung ke Distributor</strong>.
     </div>
 
-    {{-- Jika Mentor TIDAK punya kelompok tetap (misal Admin), tampilkan Dropdown --}}
+    {{-- Ubah teks kondisi --}}
     @if(!$assignedKelompokId)
         <form action="{{ route('mentor.absensi.create') }}" method="GET" class="mb-4">
             <div class="card shadow-sm">
@@ -99,4 +99,3 @@
         @endif
     @endif
 </x-app-layout>
-                                
