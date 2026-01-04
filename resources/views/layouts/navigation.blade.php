@@ -66,28 +66,27 @@
                 @endif
             </ul>
 
+            <!-- User Dropdown -->
             <ul class="navbar-nav ms-auto">
-                {{-- tampil event aktif  --}}
-                @if (isset($activeEvent))
-                    <li class="nav-item me-3 d-flex align-items-center">
-                        <div class="d-flex align-items-center gap-2 text-nowrap bg-white px-3 py-2 rounded-pill border shadow-sm">
-                            <i class="bi bi-calendar-event text-success"></i>
-                            <div class="d-flex flex-column lh-1">
-                                <span class="fw-bold small text-dark">{{ $activeEvent->nama_event }}</span>
-                                <span class="text-muted" style="font-size: 0.7rem;">Event Aktif</span>
-                            </div>
-                        </div>
-                    </li>
-                @endif
-
                 <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle d-flex align-items-center gap-2 p-1 pe-3 rounded-pill bg-white shadow-sm border" href="#" role="button" data-bs-toggle="dropdown">
-                        <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center fw-bold" style="width: 32px; height: 32px;">
+                    <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center fw-bold me-2" style="width: 32px; height: 32px;">
                             {{ substr(Auth::user()->name, 0, 1) }}
                         </div>
-                        <span class="small fw-bold text-dark">{{ Auth::user()->name }}</span>
+                        <div class="d-none d-lg-block">
+                            <div class="fw-bold text-dark">{{ Auth::user()->name }}</div>
+                            <div class="small text-muted" style="margin-top: -4px;">
+                                @if(Auth::user()->role == 'mentor')
+                                    Ketua Kelompok
+                                @elseif(Auth::user()->role == 'kasir')
+                                    Distributor
+                                @else
+                                    {{ ucfirst(Auth::user()->role) }}
+                                @endif
+                            </div>
+                        </div>
                     </a>
-                    <ul class="dropdown-menu dropdown-menu-end border-0 shadow-lg rounded-4 mt-2 p-2">
+                    <ul class="dropdown-menu dropdown-menu-end border-0 shadow-lg rounded-4 mt-2 p-2" aria-labelledby="navbarDropdown">
                         <li><a class="dropdown-item rounded-3 px-3 py-2" href="{{ route('profile.edit') }}">Edit Profil</a></li>
                         <li><hr class="dropdown-divider"></li>
                         <li>
@@ -102,38 +101,6 @@
                 </li>
             </ul>
 
-            <div class="dropdown d-none d-lg-block ms-2">
-                <a href="#" class="d-flex align-items-center text-decoration-none dropdown-toggle" data-bs-toggle="dropdown">
-                    <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center fw-bold shadow-sm" style="width: 38px; height: 38px;">
-                        {{ substr(Auth::user()->name, 0, 1) }}
-                    </div>
-                    <div class="ms-2 text-start d-none d-xl-block">
-                        <div class="fw-bold small text-white">{{ Auth::user()->name }}</div>
-                        {{-- Ubah tampilan Role --}}
-                        <div class="text-muted" style="font-size: 0.75rem;">
-                            @if(Auth::user()->role == 'mentor')
-                                Ketua Kelompok
-                            @elseif(Auth::user()->role == 'kasir')
-                                Distributor
-                            @else
-                                {{ ucfirst(Auth::user()->role) }}
-                            @endif
-                        </div>
-                    </div>
-                </a>
-                <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 mt-2">
-                    <li><a class="dropdown-item rounded-3 px-3 py-2" href="{{ route('profile.edit') }}">Edit Profil</a></li>
-                    <li><hr class="dropdown-divider"></li>
-                    <li>
-                        <form method="POST" action="{{ route('logout') }}">
-                            @csrf
-                            <button type="submit" class="dropdown-item rounded-3 px-3 py-2 text-danger fw-bold">
-                                Log Out
-                            </button>
-                        </form>
-                    </li>
-                </ul>
-            </div>
         </div>
     </div>
 </nav>
